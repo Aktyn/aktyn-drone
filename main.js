@@ -1,22 +1,18 @@
-"use strict";
 // @ts-check
+"use strict";
 
 const Stream = require("node-rtsp-stream");
-const http = require("http");
 const WebSocket = require("ws");
-const fs = require("fs");
-const path = require("path");
-const express = require("express");
-const puppeteer = require("puppeteer-core");
 require("dotenv").config();
+const Peer = require("peerjs-on-node").Peer;
 
-console.log(process.env); //TODO: remove
-
-const scripts = ["peerjs.min.js", "client.js"];
-
+/**
+ * @param {string} streamUrl
+ * @param {number} port
+ */
 function startStreamServer(streamUrl, port) {
   // Create a stream instance
-  const stream = new Stream({
+  new Stream({
     name: "TCP/H264 Stream",
     streamUrl: streamUrl,
     wsPort: port,
@@ -31,93 +27,102 @@ function startStreamServer(streamUrl, port) {
 
   console.log(`Stream server started on ws://localhost:${port}`);
 
-  // Create an Express app
-  const app = express();
-  const server = http.createServer(app);
+  // ------------------------------------------------------------
+  const peerId = process.env.PEER_ID ?? randomString(24);
+  const peer = new Peer(peerId);
+  let conn;
 
-  // Serve the client page
-  app.get("/", (req, res) => {
-    res.send(getClientHtml());
+  peer.on("open", (/** @type {string} */ id) => {
+    console.log(`Peer ID opened. Id: ${id}`);
   });
+  peer.on("connection", (connection) => {
+    conn = connection;
+    console.log("Incoming peer connection:", conn.peer);
 
-  scripts.forEach((script) => {
-    app.get(`/${script}`, (req, res) => {
-      const scriptPath = path.join(__dirname, script);
-      fs.readFile(scriptPath, (err, data) => {
-        if (err) {
-          res.status(404).send("File not found");
-        } else {
-          res.type("application/javascript").send(data);
-        }
-      });
+    conn.on("open", () => {
+      console.log("Peer connection opened");
     });
-  });
 
-  // Start the server
-  server.listen(8080, () => {
-    console.log("HTTP server running on http://localhost:8080");
-  });
-
-  // Handle the video stream
-  const wss = new WebSocket.Server({ server });
-  wss.on("connection", (ws) => {
-    console.log("New WebSocket connection");
-    ws.on("message", (message) => {
-      // Broadcast the video data to all connected peers
-      wss.clients.forEach((client) => {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-          client.send(message);
-        }
-      });
+    conn.on("data", (data) => {
+      try {
+        handleMessage(JSON.parse(data));
+      } catch (error) {
+        console.error("Error parsing string data from peer:", error);
+      }
     });
+
+    // const interval = setInterval(() => {
+    //   conn.send(
+    //     JSON.stringify({ type: "battery", value: 0.5 + Math.random() * 0.5 })
+    //   );
+    //   conn.send(
+    //     JSON.stringify({
+    //       type: "yaw",
+    //       value: (Math.random() * 2 - 1) * Math.PI,
+    //     })
+    //   );
+    //   conn.send(
+    //     JSON.stringify({
+    //       type: "pitch",
+    //       value: (Math.random() * 2 - 1) * Math.PI,
+    //     })
+    //   );
+    //   conn.send(
+    //     JSON.stringify({
+    //       type: "roll",
+    //       value: (Math.random() * 2 - 1) * Math.PI,
+    //     })
+    //   );
+    // }, 2000);
+
+    // conn.on("close", () => {
+    //   clearInterval(interval);
+    // });
   });
 
-  // Start the Puppeteer client
-  startPuppeteerClient();
-}
+  const socket = new WebSocket(`ws://127.0.0.1:${port}`);
+  socket.binaryType = "arraybuffer";
+  socket.onopen = () => {
+    console.log("WebSocket connected");
+  };
 
-//TODO: find a way to send p2p data without the need of puppeteer
-function getClientHtml() {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>TCP/H264 Stream Viewer test</title>
-      ${scripts.map((script) => `<script src="${script}"></script>`).join("")}
-    </head>
-    <body>
-    </body>
-    </html>
-  `;
-}
+  socket.onmessage = (event) => {
+    if (conn && conn.open) {
+      // @ts-ignore
+      const uint8Array = new Uint8Array(event.data);
+      conn.send(uint8Array);
+    } else {
+      console.log("No connection to peer. Dropping message.");
+    }
+  };
 
-async function startPuppeteerClient() {
-  const browser = await puppeteer.launch({
-    headless: true,
-    timeout: 120000,
-    channel: "chrome",
-    /**
-     * Use below line on raspberry pi after installing chromium-browser with `sudo apt install chromium-browser chromium-codecs-ffmpeg`
-     * */
-    executablePath: process.env.CHROME_EXECUTABLE_PATH, // It should be "/usr/bin/chromium-browser" on Raspberry Pi
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
-  const page = (await browser.pages()).at(0) ?? (await browser.newPage());
-  // await page.setContent(getClientHtml());
-  await page.goto(`http://localhost:8080?peerId=${process.env.PEER_ID}`);
+  socket.onerror = (error) => {
+    console.error("WebSocket error:", error);
+  };
 
-  page.on("console", (msg) => console.log("Page log:", msg.text()));
-
-  console.log("Puppeteer client connected and running");
-
-  // Keep the browser open
-  browser.on("disconnected", () => {
-    // startPuppeteerClient()
-    process.exit(0);
-  });
+  socket.onclose = () => {
+    console.log("WebSocket closed");
+  };
 }
 
 const streamUrl = process.env.CAMERA_STREAM_URL ?? "tcp://127.0.0.1:8887";
 const wsPort = 9999;
-
 startStreamServer(streamUrl, wsPort);
+
+/**
+ * @param {{type: 'steering', value: {throttle: number, yaw: number, pitch: number, roll: number}}} message
+ */
+function handleMessage(message) {
+  // console.log("Received message from peer:", message);
+  switch (message.type) {
+    case "steering":
+      console.log("Steering:", message.value);
+      break;
+  }
+}
+
+function randomString(length) {
+  return Math.random()
+    .toString(36)
+    .substring(2, 2 + length);
+}

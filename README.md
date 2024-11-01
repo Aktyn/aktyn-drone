@@ -3,7 +3,6 @@ Raspberry Pi to flight controller interface with p2p-based connectivity, web con
 
 ### Install dependencies
 ```
-sudo apt install chromium-browser chromium-codecs-ffmpeg
 npm install
 ```
 
@@ -13,5 +12,5 @@ npm run start
 ```
 
 ### Open controller
-- Copy `receiver.html`, `receiver.js`, `peerjs.min.js` and `jsmpeg.min.js` to a web server directory or to your computer's local filesystem
+- Copy `receiver.html`, `receiver.js`, `peerjs.min.js`, `jsmpeg.min.js` and `drone-widget.png` to a web server directory or to your computer's local filesystem
 - Open `receiver.html` in a web browser
