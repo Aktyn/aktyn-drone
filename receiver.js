@@ -1,12 +1,9 @@
 //@ts-check
 "use strict";
 
-class PeerDataSource extends EventTarget {
+class PeerDataSource {
   constructor(_, options) {
-    super();
-    this.url = "ws://localhost:9999";
     this.options = options;
-    this.socket = null;
     this.streaming = true;
     this.callbacks = { connect: [], data: [] };
     this.destination = null;
@@ -28,25 +25,12 @@ class PeerDataSource extends EventTarget {
   destroy() {
     clearTimeout(this.reconnectTimeoutId);
     this.shouldAttemptReconnect = false;
-    this.socket?.close();
   }
 
   start() {
     this.shouldAttemptReconnect = !!this.reconnectInterval;
     this.progress = 0;
     this.established = false;
-    if (this.options.protocols) {
-      this.socket = new WebSocket(this.url, this.options.protocols);
-    } else {
-      this.socket = new WebSocket(this.url);
-    }
-    this.socket.binaryType = "arraybuffer";
-    // this.socket.onmessage = this.onMessage.bind(this);
-    // this.socket.onopen = this.onOpen.bind(this);
-    // this.socket.onerror = this.onError.bind(this);
-    this.socket.onerror = (error) =>
-      this.dispatchEvent(new ErrorEvent("error", { error }));
-    // this.socket.onclose = this.onClose.bind(this);
   }
 
   resume(_secondsHeadroom) {}
@@ -54,10 +38,6 @@ class PeerDataSource extends EventTarget {
   onOpen() {
     this.progress = 1;
   }
-
-  // onError(error) {
-  //   console.error("PeerDataSource error:", error);
-  // }
 
   onClose() {
     if (this.shouldAttemptReconnect) {
@@ -115,12 +95,6 @@ function connect(
   });
   console.log("p2pPlayer", p2pPlayer);
 
-  p2pPlayer.source.addEventListener("error", (error) => {
-    console.error("p2pPlayer error:", error);
-    connectionError.textContent = `PeerDataSource error: ${error.message}`;
-    connectButton.disabled = false;
-  });
-
   const conn = peer.connect(dronePeerId);
 
   conn.on("open", () => {
@@ -150,7 +124,6 @@ function connect(
 
   conn.on("error", (error) => {
     console.error("Connection error:", error);
-    // p2pPlayer.source.onError(error);
   });
 
   /** @param {Event} event */
@@ -158,7 +131,6 @@ function connect(
     /** @type {SteeringControls | null} */
     // @ts-ignore
     const target = event.target;
-    // console.log("steeringChanged", target?.steering);
     if (conn && conn.open && target?.steering) {
       conn.send(JSON.stringify({ type: "steering", value: target.steering }));
     }

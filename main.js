@@ -11,6 +11,9 @@ const Peer = require("peerjs-on-node").Peer;
  * @param {number} port
  */
 function startStreamServer(streamUrl, port) {
+  //TODO: execute below command beforehand
+  // `libcamera-vid -t 0 --nopreview --width 480 --height 360 --listen -o ${process.env.CAMERA_STREAM_URL}`
+
   // Create a stream instance
   new Stream({
     name: "TCP/H264 Stream",
@@ -92,7 +95,7 @@ function startStreamServer(streamUrl, port) {
       const uint8Array = new Uint8Array(event.data);
       conn.send(uint8Array);
     } else {
-      console.log("No connection to peer. Dropping message.");
+      // console.log("No connection to peer. Dropping message.");
     }
   };
 
