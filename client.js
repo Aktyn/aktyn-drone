@@ -8,8 +8,10 @@ document.addEventListener("DOMContentLoaded", function () {
   socket.binaryType = "arraybuffer";
   console.log("WS:", socket);
 
+  const peerId = new URL(window.location.href).searchParams.get("peerId");
+
   // @ts-ignore
-  const peer = new Peer("aktyn-drone-camera-stream");
+  const peer = new Peer(peerId ?? randomString(24));
   let conn;
 
   peer.on("open", (id) => {
@@ -51,3 +53,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
+
+function randomString(length) {
+  return Math.random()
+    .toString(36)
+    .substring(2, 2 + length);
+}

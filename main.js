@@ -8,6 +8,9 @@ const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const puppeteer = require("puppeteer-core");
+require("dotenv").config();
+
+console.log(process.env); //TODO: remove
 
 const scripts = ["peerjs.min.js", "client.js"];
 
@@ -20,9 +23,9 @@ function startStreamServer(streamUrl, port) {
     width: 480,
     height: 360,
     //ffmpegOptions: {
-      //"-stats": "",
-      //"-r": 30,
-      //"-q:v": 3,
+    //"-stats": "",
+    //"-r": 30,
+    //"-q:v": 3,
     //},
   });
 
@@ -92,15 +95,16 @@ async function startPuppeteerClient() {
   const browser = await puppeteer.launch({
     headless: true,
     timeout: 120000,
+    channel: "chrome",
     /**
      * Use below line on raspberry pi after installing chromium-browser with `sudo apt install chromium-browser chromium-codecs-ffmpeg`
      * */
-    executablePath: "/usr/bin/chromium-browser",
+    executablePath: process.env.CHROME_EXECUTABLE_PATH, // It should be "/usr/bin/chromium-browser" on Raspberry Pi
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
   const page = (await browser.pages()).at(0) ?? (await browser.newPage());
   // await page.setContent(getClientHtml());
-  await page.goto("http://localhost:8080");
+  await page.goto(`http://localhost:8080?peerId=${process.env.PEER_ID}`);
 
   page.on("console", (msg) => console.log("Page log:", msg.text()));
 
@@ -113,7 +117,7 @@ async function startPuppeteerClient() {
   });
 }
 
-const streamUrl = "tcp://127.0.0.1:8887";
+const streamUrl = process.env.CAMERA_STREAM_URL ?? "tcp://127.0.0.1:8887";
 const wsPort = 9999;
 
 startStreamServer(streamUrl, wsPort);

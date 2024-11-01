@@ -11,8 +11,9 @@
 //   }
 // }
 
-class PeerDataSource {
+class PeerDataSource extends EventTarget {
   constructor(_, options) {
+    super();
     this.url = "ws://localhost:9999";
     this.options = options;
     this.socket = null;
@@ -52,7 +53,9 @@ class PeerDataSource {
     this.socket.binaryType = "arraybuffer";
     // this.socket.onmessage = this.onMessage.bind(this);
     // this.socket.onopen = this.onOpen.bind(this);
-    // this.socket.onerror = this.onClose.bind(this);
+    // this.socket.onerror = this.onError.bind(this);
+    this.socket.onerror = (error) =>
+      this.dispatchEvent(new ErrorEvent("error", { error }));
     // this.socket.onclose = this.onClose.bind(this);
   }
 
@@ -61,6 +64,10 @@ class PeerDataSource {
   onOpen() {
     this.progress = 1;
   }
+
+  // onError(error) {
+  //   console.error("PeerDataSource error:", error);
+  // }
 
   onClose() {
     if (this.shouldAttemptReconnect) {
@@ -87,10 +94,16 @@ document.addEventListener("DOMContentLoaded", function () {
   const canvas = document.getElementById("videoPlayer");
   const connectButton = document.getElementById("connectButton");
   const peerIdInput = document.getElementById("peerIdInput");
+  const connectionError = document.getElementById("connectionError");
 
-  if (!canvas || !connectButton || !peerIdInput) {
-    throw new Error("No canvas, connectButton or peerIdInput found");
+  if (!canvas || !connectButton || !peerIdInput || !connectionError) {
+    throw new Error(
+      "No canvas, connectButton, peerIdInput or connectionError found"
+    );
   }
+
+  const steering = new SteeringControls();
+  //TODO: listen to leftJoystick and rightJoystick events and send messages to the peer
 
   // @ts-ignore
   const peer = new Peer();
@@ -99,6 +112,9 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   connectButton.addEventListener("click", () => {
+    connectButton.disabled = true;
+    connectionError.textContent = "";
+
     const dronePeerId = peerIdInput?.value ?? "fallback-peer-id-aktyn-drone";
 
     // @ts-ignore
@@ -112,11 +128,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     console.log("p2pPlayer", p2pPlayer);
 
+    p2pPlayer.source.addEventListener("error", (error) => {
+      console.error("p2pPlayer error:", error);
+      connectionError.textContent = `PeerDataSource error: ${error.message}`;
+      connectButton.disabled = false;
+    });
+
     const conn = peer.connect(dronePeerId);
 
     conn.on("open", () => {
       console.log("Connected to peer");
       p2pPlayer.source.onOpen();
+      connectButton.disabled = true;
     });
 
     conn.on("data", (data) => {
@@ -136,11 +159,90 @@ document.addEventListener("DOMContentLoaded", function () {
     conn.on("close", () => {
       console.log("Connection closed");
       p2pPlayer.source.onClose();
+      connectButton.disabled = false;
     });
 
     conn.on("error", (error) => {
       console.error("Connection error:", error);
-      p2pPlayer.source.onError(error);
+      // p2pPlayer.source.onError(error);
     });
   });
 });
+
+class SteeringControls {
+  constructor() {
+    this.leftJoystick = document.getElementById("leftJoystick");
+    this.rightJoystick = document.getElementById("rightJoystick");
+
+    if (!this.leftJoystick || !this.rightJoystick) {
+      throw new Error("No leftJoystick or rightJoystick found");
+    }
+
+    for (const joystick of [this.leftJoystick, this.rightJoystick]) {
+      this.setupJoystickGestures(joystick);
+    }
+  }
+
+  /*
+   * @param {HTMLElement} joystick
+   */
+  setupJoystickGestures(joystick) {
+    const joystickButton = joystick.querySelector("button");
+    if (!joystickButton) {
+      throw new Error("No button found in joystick");
+    }
+
+    const areaRect = joystick.getBoundingClientRect();
+    const areaCenterX = areaRect.left + areaRect.width / 2;
+    const areaCenterY = areaRect.top + areaRect.height / 2;
+
+    let isJoystickDown = false;
+
+    const onJoystickDown = (ev) => {
+      console.log("Joystick down", ev);
+      isJoystickDown = true;
+      joystickButton.style.transition = "";
+    };
+
+    const onJoystickMove = (ev) => {
+      if (isJoystickDown) {
+        const { x, y } = ev;
+        const deltaX = clamp(
+          x - areaCenterX,
+          -areaRect.width / 2,
+          areaRect.width / 2
+        );
+        const deltaY = clamp(
+          y - areaCenterY,
+          -areaRect.height / 2,
+          areaRect.height / 2
+        );
+
+        joystickButton.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+        console.log("Joystick move", deltaX, deltaY);
+        //TODO: emit event with normalized deltaX and deltaY
+      }
+    };
+
+    const onJoystickUp = (ev) => {
+      console.log("Joystick up", ev);
+      isJoystickDown = false;
+      joystickButton.style.transition = "transform 0.2s ease-in-out";
+      joystickButton.style.transform = "translate(0px, 0px)";
+    };
+
+    joystickButton.addEventListener("pointerdown", onJoystickDown);
+    document.addEventListener("pointermove", onJoystickMove);
+    document.addEventListener("pointerup", onJoystickUp);
+  }
+}
+
+/**
+ * @param {number} value
+ * @param {number} min
+ * @param {number} max
+ */
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}

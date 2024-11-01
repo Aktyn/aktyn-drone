@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-color-scheme="dark">
 
 <head>
   <meta charset="UTF-8">
@@ -8,17 +8,110 @@
   <script src="peerjs.min.js"></script>
   <script type="text/javascript" src="jsmpeg.min.js"></script>
   <script src="receiver.js"></script>
+
+  <link rel="stylesheet" href="https://matcha.mizu.sh/matcha.css">
+  <style>
+    :root {
+      font-size: 16px;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100dvh;
+    }
+
+    main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    footer {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    button {
+      white-space: nowrap;
+    }
+
+    .error {
+      color: var(--danger);
+    }
+
+    .secondary {
+      color: var(--muted);
+    }
+
+    .joystick {
+      width: 160px;
+      height: 160px;
+      border: 1px solid var(--bd-muted);
+      border-radius: var(--bd-radius);
+      background-color: var(--contrast);
+      /* background-image: linear-gradient(to right, var(--contrast) 50%, var(--muted) 50%); */
+      position: relative;
+      overflow: visible;
+    }
+
+    .joystick button {
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      background-color: var(--muted);
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      /* transform: translate(-80px, 0); */
+    }
+
+    #videoPlayer {
+      width: 480px;
+      height: 360px;
+      border: 1px solid var(--bd-muted);
+      border-radius: var(--bd-radius);
+      background-color: var(--contrast);
+    }
+  </style>
 </head>
 
 <body>
-  <h1>Video Receiver</h1>
-  <div>
-    <input type="text" id="peerIdInput" placeholder="Enter peer ID">
-    <button id="connectButton">Connect</button>
-  </div>
-  <p>
-    <canvas id="videoPlayer"></canvas>
-  </p>
+  <main>
+    <div style="width: 480px; display: flex; flex-direction: column; gap: 1rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <input type="text" id="peerIdInput" placeholder="Enter peer ID"
+            style="width: 16rem; margin: 0; flex-grow: 1;">
+          <button id="connectButton">Connect</button>
+        </div>
+        <div id="connectionError" class="error" style="text-align: center; font-weight: bold;"></div>
+      </div>
+      <canvas id="videoPlayer"></canvas>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+        <div><span class="secondary">Yaw:</span>&nbsp;<b id="yaw">-</b></div>
+        <div><span class="secondary">Pitch:</span>&nbsp;<b id="pitch">-</b></div>
+        <div><span class="secondary">Roll:</span>&nbsp;<b id="roll">-</b></div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); justify-content: space-between; gap: 1rem;">
+        <div id="leftJoystick" class="joystick">
+          <button />
+        </div>
+        <span style="text-align: center;">
+          <!-- todo: 3d drone rotation preview -->
+        </span>
+        <div id="rightJoystick" class="joystick">
+          <button />
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer>Aktyn Drone control panel <b>|</b> Created by <a href="https://github.com/Aktyn">Aktyn</a></footer>
 </body>
 
 </html>
