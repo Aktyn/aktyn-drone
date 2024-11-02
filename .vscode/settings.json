@@ -4,8 +4,12 @@
     "Crsf",
     "jsmpeg",
     "Krajewski",
+    "PYTHONUNBUFFERED",
     "Radosław",
     "rtsp",
     "UART"
+  ],
+  "cSpell.enableFiletypes": [
+    "!python"
   ]
 }

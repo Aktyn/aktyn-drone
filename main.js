@@ -5,6 +5,7 @@ const Stream = require("node-rtsp-stream");
 const WebSocket = require("ws");
 require("dotenv").config();
 const Peer = require("peerjs-on-node").Peer;
+const { initFlightController } = require("./flight-controller");
 
 /**
  * @param {string} streamUrl
@@ -53,34 +54,6 @@ function startStreamServer(streamUrl, port) {
         console.error("Error parsing string data from peer:", error);
       }
     });
-
-    // const interval = setInterval(() => {
-    //   conn.send(
-    //     JSON.stringify({ type: "battery", value: 0.5 + Math.random() * 0.5 })
-    //   );
-    //   conn.send(
-    //     JSON.stringify({
-    //       type: "yaw",
-    //       value: (Math.random() * 2 - 1) * Math.PI,
-    //     })
-    //   );
-    //   conn.send(
-    //     JSON.stringify({
-    //       type: "pitch",
-    //       value: (Math.random() * 2 - 1) * Math.PI,
-    //     })
-    //   );
-    //   conn.send(
-    //     JSON.stringify({
-    //       type: "roll",
-    //       value: (Math.random() * 2 - 1) * Math.PI,
-    //     })
-    //   );
-    // }, 2000);
-
-    // conn.on("close", () => {
-    //   clearInterval(interval);
-    // });
   });
 
   const socket = new WebSocket(`ws://127.0.0.1:${port}`);
@@ -106,6 +79,8 @@ function startStreamServer(streamUrl, port) {
   socket.onclose = () => {
     console.log("WebSocket closed");
   };
+
+  initFlightController();
 }
 
 const streamUrl = process.env.CAMERA_STREAM_URL ?? "tcp://127.0.0.1:8887";
@@ -129,3 +104,8 @@ function randomString(length) {
     .toString(36)
     .substring(2, 2 + length);
 }
+
+process.on("SIGINT", () => {
+  console.log("Shutting down...");
+  process.exit();
+});

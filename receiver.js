@@ -140,7 +140,7 @@ function connect(
 }
 
 /**
- * @param {{type: 'battery', value: number} | {type: 'yaw', value: number} | {type: 'pitch', value: number} | {type: 'roll', value: number}} message
+ * @param {{type: 'battery', value: number} | {type: 'attitude', value: {pitch: number, roll: number, yaw: number}}} message
  * @param {HTMLElement} dronePreview
  */
 function handleMessage(message, dronePreview) {
@@ -164,46 +164,37 @@ function handleMessage(message, dronePreview) {
         }
       }
       break;
-    case "yaw":
+    case "attitude":
       {
-        const yawValue = document.getElementById("yaw-value");
-        if (yawValue) {
-          yawValue.textContent = `${Math.round(
-            radiansToDegrees(message.value)
-          )}°`;
+        const items = [
+          {
+            elementId: "pitch-value",
+            cssVariable: "--pitch",
+            value: message.value.pitch,
+          },
+          {
+            elementId: "roll-value",
+            cssVariable: "--roll",
+            value: message.value.roll,
+          },
+          {
+            elementId: "yaw-value",
+            cssVariable: "--yaw",
+            value: message.value.yaw,
+          },
+        ];
+        for (const item of items) {
+          const itemValue = document.getElementById(item.elementId);
+          if (itemValue) {
+            itemValue.textContent = `${Math.round(
+              radiansToDegrees(item.value)
+            )}°`;
+          }
+          dronePreview.style.setProperty(
+            item.cssVariable,
+            radiansToDegrees(item.value) + "deg"
+          );
         }
-        dronePreview.style.setProperty(
-          "--yaw",
-          radiansToDegrees(message.value) + "deg"
-        );
-      }
-      break;
-    case "pitch":
-      {
-        const pitchValue = document.getElementById("pitch-value");
-        if (pitchValue) {
-          pitchValue.textContent = `${Math.round(
-            radiansToDegrees(message.value)
-          )}°`;
-        }
-        dronePreview.style.setProperty(
-          "--pitch",
-          radiansToDegrees(message.value) + "deg"
-        );
-      }
-      break;
-    case "roll":
-      {
-        const rollValue = document.getElementById("roll-value");
-        if (rollValue) {
-          rollValue.textContent = `${Math.round(
-            radiansToDegrees(message.value)
-          )}°`;
-        }
-        dronePreview.style.setProperty(
-          "--roll",
-          radiansToDegrees(message.value) + "deg"
-        );
       }
       break;
   }
