@@ -5,6 +5,7 @@ const Stream = require("node-rtsp-stream");
 const WebSocket = require("ws");
 require("dotenv").config();
 const Peer = require("peerjs-on-node").Peer;
+const { startCamera } = require("./libcamera");
 const { initFlightController } = require("./flight-controller");
 
 /**
@@ -12,8 +13,7 @@ const { initFlightController } = require("./flight-controller");
  * @param {number} port
  */
 function startStreamServer(streamUrl, port) {
-  //TODO: execute below command beforehand
-  // `libcamera-vid -t 0 --nopreview --width 480 --height 360 --listen -o ${process.env.CAMERA_STREAM_URL}`
+  const libcameraProcess = startCamera();
 
   // Create a stream instance
   new Stream({
@@ -49,9 +49,23 @@ function startStreamServer(streamUrl, port) {
 
     conn.on("data", (data) => {
       try {
-        handleMessage(JSON.parse(data));
+        // Forward the data to the python script
+        const io = pythonScriptProcess.stdin;
+        if (!io || !io.writable) {
+          console.error("Python script stdin is not writable");
+          return;
+        }
+
+        // Add newline to ensure Python readline() gets complete lines
+        const dataString =
+          typeof data === "string" ? data : JSON.stringify(data);
+        io.write(dataString + "\n", (error) => {
+          if (error) {
+            console.error("Error writing to python script stdin:", error);
+          }
+        });
       } catch (error) {
-        console.error("Error parsing string data from peer:", error);
+        console.error("Error sending data to python script:", error);
       }
     });
   });
@@ -80,24 +94,56 @@ function startStreamServer(streamUrl, port) {
     console.log("WebSocket closed");
   };
 
-  initFlightController();
+  let lastBatteryPercentage = 0;
+  const pythonScriptProcess = initFlightController(
+    /**
+     * @param {{type: 'battery', value: number} | {type: 'attitude', value: {pitch: number, roll: number, yaw: number}}} message
+     */
+    (message) => {
+      if (message.type === "battery") {
+        if (message.value === lastBatteryPercentage) {
+          return;
+        }
+        lastBatteryPercentage = message.value;
+        console.log("Battery percentage:", message.value);
+      }
+
+      if (message && conn && conn.open) {
+        conn.send(JSON.stringify(message));
+      }
+    }
+  );
+
+  return () => {
+    try {
+      libcameraProcess.kill();
+    } catch (error) {
+      console.error("Error killing libcamera process:", error);
+    }
+
+    try {
+      pythonScriptProcess.kill();
+    } catch (error) {
+      console.error("Error killing python script process:", error);
+    }
+  };
 }
 
 const streamUrl = process.env.CAMERA_STREAM_URL ?? "tcp://127.0.0.1:8887";
 const wsPort = 9999;
-startStreamServer(streamUrl, wsPort);
+const cleanup = startStreamServer(streamUrl, wsPort);
 
-/**
- * @param {{type: 'steering', value: {throttle: number, yaw: number, pitch: number, roll: number}}} message
- */
-function handleMessage(message) {
-  // console.log("Received message from peer:", message);
-  switch (message.type) {
-    case "steering":
-      console.log("Steering:", message.value);
-      break;
-  }
-}
+// /**
+//  * @param {{type: 'steering', value: {throttle: number, yaw: number, pitch: number, roll: number}}} message
+//  */
+// function handleMessage(message) {
+//   // console.log("Received message from peer:", message);
+//   switch (message.type) {
+//     case "steering":
+//       console.log("Steering:", message.value);
+//       break;
+//   }
+// }
 
 function randomString(length) {
   return Math.random()
@@ -107,5 +153,6 @@ function randomString(length) {
 
 process.on("SIGINT", () => {
   console.log("Shutting down...");
+  cleanup();
   process.exit();
 });

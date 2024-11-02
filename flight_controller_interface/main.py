@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
+
+import json
 import serial
 import time
 import argparse
 import math
 from enum import IntEnum
+import asyncio
+import sys
+import select
 
 
 def rad2deg(rad):
@@ -18,6 +23,10 @@ CRSF_SYNC = 0xC8
 STICK_MINIMUM = 0  # 885
 STICK_MAXIMUM = 100  # 2115
 STICK_CENTER = int((STICK_MINIMUM + STICK_MAXIMUM) / 2)
+
+
+def factor_to_stick_value(factor):
+    return int(STICK_MINIMUM + (factor * (STICK_MAXIMUM - STICK_MINIMUM)))
 
 
 class PacketsTypes(IntEnum):
@@ -241,51 +250,85 @@ class TestCRSFController:
         return frame
 
 
-with serial.Serial(args.port, args.baud, timeout=2) as uart:
-    input_buffer = bytearray()
-    # last_command_time = 0
+async def handle_stdin(controller):
+    while True:
+        try:
+            # Read line from stdin without blocking
+            if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
+                line = sys.stdin.readline()
+                if not line:
+                    break
 
-    # controller = TestCRSFController(uart)
+                # {type: 'steering', value: {throttle: number, yaw: number, pitch: number, roll: number}}
+                message = json.loads(line)
+                if message["type"] == "steering":
+                    if "throttle" in message["value"]:
+                        controller.set_channel(
+                            RCChannels.THROTTLE,
+                            factor_to_stick_value(message["value"]["throttle"]),
+                        )
+                    if "yaw" in message["value"]:
+                        controller.set_channel(
+                            RCChannels.YAW,
+                            factor_to_stick_value(message["value"]["yaw"]),
+                        )
+                    if "pitch" in message["value"]:
+                        controller.set_channel(
+                            RCChannels.PITCH,
+                            factor_to_stick_value(message["value"]["pitch"]),
+                        )
+                    if "roll" in message["value"]:
+                        controller.set_channel(
+                            RCChannels.ROLL,
+                            factor_to_stick_value(message["value"]["roll"]),
+                        )
+                    # TODO: send it continuously to keep values from resetting
+                    controller.send_channels()
+        except Exception as e:
+            print('{"type": "error", "message": "Error reading stdin"}')
+            break
+        await asyncio.sleep(1.0 / 60.0)  # Small delay to prevent CPU hogging
 
-    try:
-        while True:
-            # Handle incoming data
-            if uart.in_waiting > 0:
-                input_buffer.extend(uart.read(uart.in_waiting))
-            else:
-                time.sleep(0.010)
 
-            # Process received packets
-            if len(input_buffer) > 2:
-                expected_len = input_buffer[1] + 2
-                if expected_len > 64 or expected_len < 4:
-                    input_buffer = []
-                elif len(input_buffer) >= expected_len:
-                    single_packet = input_buffer[:expected_len]
-                    input_buffer = input_buffer[expected_len:]
+async def handle_uart(uart, input_buffer):
+    while True:
+        # Handle incoming UART data
+        if uart.in_waiting > 0:
+            input_buffer.extend(uart.read(uart.in_waiting))
+        else:
+            await asyncio.sleep(0.010)
 
-                    if not crsf_validate_frame(single_packet):
-                        PACKET_BYTES = " ".join(map(hex, single_packet))
-                        print(f"CRC error: {PACKET_BYTES}")
-                    else:
-                        handleCrsfPacket(single_packet[2], single_packet)
+        # Process received packets
+        if len(input_buffer) > 2:
+            expected_len = input_buffer[1] + 2
+            if expected_len > 64 or expected_len < 4:
+                input_buffer.clear()
+            elif len(input_buffer) >= expected_len:
+                single_packet = input_buffer[:expected_len]
+                input_buffer = input_buffer[expected_len:]
 
-            # Send random attitude commands at specified interval
-            # current_time = time.time()
-            # if current_time - last_command_time >= args.interval:
-            #     # for _ in range(100):
-            #     for stick_value in range(STICK_MINIMUM, STICK_MAXIMUM, 1):
-            #         controller.set_channel(RCChannels.THROTTLE, stick_value)
-            #         frame = controller.send_channels()
-            #         print(f"Set stick value: {stick_value}") ## TODO: remove
+                if not crsf_validate_frame(single_packet):
+                    PACKET_BYTES = " ".join(map(hex, single_packet))
+                    print(f"CRC error: {PACKET_BYTES}")
+                else:
+                    handleCrsfPacket(single_packet[2], single_packet)
 
-            #         time.sleep(1.0/400.0)  # CRSF runs at 400Hz
 
-            #     controller.set_channel(RCChannels.YAW, STICK_CENTER)
+async def main():
+    with serial.Serial(args.port, args.baud, timeout=2) as uart:
+        input_buffer = bytearray()
+        controller = TestCRSFController(uart)
 
-            #     last_command_time = current_time
-    except KeyboardInterrupt:
-        print("\nStopping transmission...")
-    finally:
-        uart.close()
-        print("UART connection closed")
+        try:
+            await asyncio.gather(
+                handle_stdin(controller), handle_uart(uart, input_buffer)
+            )
+        except KeyboardInterrupt:
+            print("\nStopping transmission...")
+        finally:
+            uart.close()
+            print("UART connection closed")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

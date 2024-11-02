@@ -144,7 +144,7 @@ function connect(
  * @param {HTMLElement} dronePreview
  */
 function handleMessage(message, dronePreview) {
-  console.log("handleMessage", message);
+  // console.log("handleMessage", message);
 
   switch (message.type) {
     case "battery":
@@ -170,7 +170,7 @@ function handleMessage(message, dronePreview) {
           {
             elementId: "pitch-value",
             cssVariable: "--pitch",
-            value: message.value.pitch,
+            value: message.value.pitch + Math.PI / 2,
           },
           {
             elementId: "roll-value",
