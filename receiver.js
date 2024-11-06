@@ -69,6 +69,10 @@ class PeerDataSource {
  * @param {HTMLInputElement} peerIdInput
  * @param {HTMLElement} connectionError
  * @param {HTMLElement} dronePreview
+ * @param {HTMLButtonElement} armButton
+ * @param {HTMLButtonElement} disarmButton
+ * @param {HTMLButtonElement} angleModeOnButton
+ * @param {HTMLButtonElement} angleModeOffButton
  */
 function connect(
   peer,
@@ -77,7 +81,11 @@ function connect(
   connectButton,
   peerIdInput,
   connectionError,
-  dronePreview
+  dronePreview,
+  armButton,
+  disarmButton,
+  angleModeOnButton,
+  angleModeOffButton
 ) {
   connectButton.disabled = true;
   connectionError.textContent = "";
@@ -137,6 +145,26 @@ function connect(
   };
 
   steering.addEventListener("steeringChanged", handleSteeringChanged);
+
+  armButton.onclick = () => {
+    console.log("Sending arm message to drone");
+    conn.send(JSON.stringify({ type: "arm" }));
+  };
+
+  disarmButton.onclick = () => {
+    console.log("Sending disarm message to drone");
+    conn.send(JSON.stringify({ type: "disarm" }));
+  };
+
+  angleModeOnButton.onclick = () => {
+    console.log("Sending angle mode on message to drone");
+    conn.send(JSON.stringify({ type: "angleModeOn" }));
+  };
+
+  angleModeOffButton.onclick = () => {
+    console.log("Sending angle mode off message to drone");
+    conn.send(JSON.stringify({ type: "angleModeOff" }));
+  };
 }
 
 /**
@@ -206,18 +234,36 @@ document.addEventListener("DOMContentLoaded", function () {
   const peerIdInput = document.getElementById("peerIdInput");
   const connectionError = document.getElementById("connectionError");
   const dronePreview = document.getElementById("drone");
+  const toggleMoreControlsButton =
+    document.getElementById("toggleMoreControls");
+  const moreControls = document.getElementById("moreControls");
+  const armButton = document.getElementById("armButton");
+  const disarmButton = document.getElementById("disarmButton");
+  const angleModeOnButton = document.getElementById("angleModeOnButton");
+  const angleModeOffButton = document.getElementById("angleModeOffButton");
 
   if (
     !canvas ||
     !connectButton ||
     !peerIdInput ||
     !connectionError ||
-    !dronePreview
+    !dronePreview ||
+    !toggleMoreControlsButton ||
+    !moreControls ||
+    !armButton ||
+    !disarmButton ||
+    !angleModeOnButton ||
+    !angleModeOffButton
   ) {
     throw new Error(
-      "No canvas, connectButton, peerIdInput, connectionError or dronePreview found"
+      "No canvas, connectButton, peerIdInput, connectionError, dronePreview, toggleMoreControlsButton, moreControls, armButton, disarmButton, angleModeOnButton or angleModeOffButton found"
     );
   }
+
+  toggleMoreControlsButton.addEventListener("click", () => {
+    moreControls.style.display =
+      moreControls.style.display === "none" ? "flex" : "none";
+  });
 
   const steering = new SteeringControls();
 
@@ -236,7 +282,11 @@ document.addEventListener("DOMContentLoaded", function () {
       connectButton,
       peerIdInput,
       connectionError,
-      dronePreview
+      dronePreview,
+      armButton,
+      disarmButton,
+      angleModeOnButton,
+      angleModeOffButton
     )
   );
 });
@@ -303,7 +353,10 @@ class SteeringControls extends EventTarget {
         1
       );
 
-      if (previousThrottleFactor !== this.#throttleFactor) {
+      if (
+        previousThrottleFactor !== this.#throttleFactor ||
+        !this.isRestPosition
+      ) {
         this.throttle.value = this.#throttleFactor * 100;
         this.throttlePercentage.textContent = `${Math.round(
           this.#throttleFactor * 100
@@ -315,6 +368,22 @@ class SteeringControls extends EventTarget {
     };
 
     update(0);
+  }
+
+  get isRestPosition() {
+    return (
+      this.#throttleStickValue === 0 &&
+      this.#yaw === 0.5 &&
+      this.#pitch === 0.5 &&
+      this.#roll === 0.5
+    );
+  }
+
+  #resetJoysticks() {
+    this.#throttleStickValue = 0;
+    this.#yaw = 0.5;
+    this.#pitch = 0.5;
+    this.#roll = 0.5;
   }
 
   /*
@@ -372,23 +441,17 @@ class SteeringControls extends EventTarget {
           this.#pitch = (valueY + 1) / 2;
           this.#roll = (valueX + 1) / 2;
         }
-        this.dispatchEvent(new Event("steeringChanged"));
-
-        //TODO: emit event with normalized deltaX and deltaY
       }
     };
 
-    const onJoystickUp = (ev) => {
+    const onJoystickUp = () => {
       if (!isJoystickDown) {
         return;
       }
       isJoystickDown = false;
       joystickButton.style.transition = "transform 0.2s ease-in-out";
       joystickButton.style.transform = "translate(0px, 0px)";
-      this.#throttleStickValue = 0;
-      this.#yaw = 0.5;
-      this.#pitch = 0.5;
-      this.#roll = 0.5;
+      this.#resetJoysticks();
       this.dispatchEvent(new Event("steeringChanged"));
     };
 

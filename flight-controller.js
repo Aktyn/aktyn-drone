@@ -6,6 +6,15 @@ const path = require("path");
 
 function handleMessage(message) {
   switch (message.type) {
+    default:
+      console.warn("Unhandled message:", JSON.stringify(message));
+      break;
+    case "ERROR":
+      console.error("Python script error:", message.message);
+      break;
+    case "INFO":
+      console.info("Python script info:", message.message);
+      break;
     case "ATTITUDE":
       // console.log("Attitude data:", message);
       return {
@@ -22,9 +31,13 @@ function handleMessage(message) {
         type: "battery",
         value: message.percentage / 100,
       };
+    // case "BARO_ALTITUDE":
+    //   return {
+    //     type: "altitude",
+    //     value: message.altitude,
+    //   };
     // TODO:  handle other cases
   }
-  console.warn("Unhandled message type:", message.type);
 }
 
 /**
@@ -42,6 +55,9 @@ function initFlightController(callback) {
   pythonScriptProcess.stdout.on("data", (data) => {
     try {
       const stringValue = data.toString().trim().replace(/\n/g, "");
+      if (!stringValue) {
+        return;
+      }
       if (!stringValue.match(/^\{[\s\S]*\}$/)) {
         console.warn("Invalid JSON string:", stringValue);
         return;

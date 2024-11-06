@@ -59,6 +59,7 @@ function startStreamServer(streamUrl, port) {
         // Add newline to ensure Python readline() gets complete lines
         const dataString =
           typeof data === "string" ? data : JSON.stringify(data);
+        console.log("Sending data to python script:", dataString);
         io.write(dataString + "\n", (error) => {
           if (error) {
             console.error("Error writing to python script stdin:", error);

@@ -283,11 +283,28 @@ async def handle_stdin(controller):
                             factor_to_stick_value(message["value"]["roll"]),
                         )
                     # TODO: send it continuously to keep values from resetting
-                    controller.send_channels()
-        except Exception as e:
-            print('{"type": "error", "message": "Error reading stdin"}')
+                    # controller.send_channels()
+                elif message["type"] == "arm":
+                    print('{"type": "INFO", "message": "Arming drone"}', flush=True)
+                    controller.set_channel(RCChannels.AUX1, 90.66)
+                    # controller.send_channels()
+                elif message["type"] == "disarm":
+                    print('{"type": "INFO", "message": "Disarming drone"}', flush=True)
+                    controller.set_channel(RCChannels.AUX1, 9.349593495934959)
+                    # controller.send_channels()
+                elif message["type"] == "angleModeOn":
+                    print('{"type": "INFO", "message": "Angle mode on"}', flush=True)
+                    controller.set_channel(RCChannels.AUX2, 90.66)
+                    # controller.send_channels()
+                elif message["type"] == "angleModeOff":
+                    print('{"type": "INFO", "message": "Angle mode off"}', flush=True)
+                    controller.set_channel(RCChannels.AUX2, 9.349593495934959)
+                    # controller.send_channels()
+        except Exception:
+            print('{"type": "ERROR", "message": "Error reading stdin"}')
             break
-        await asyncio.sleep(1.0 / 60.0)  # Small delay to prevent CPU hogging
+        controller.send_channels()  # TODO: try without continous channels sending when drone is armed
+        await asyncio.sleep(0.001)  # Small delay to prevent CPU hogging
 
 
 async def handle_uart(uart, input_buffer):
