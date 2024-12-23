@@ -1,0 +1,38 @@
+{
+  "folders": [
+    {
+      "name": "Root",
+      "path": "."
+    },
+    {
+      "name": "Drone computer",
+      "path": "./workspaces/drone-computer"
+    },
+    {
+      "name": "Mobile pilot",
+      "path": "./workspaces/mobile-pilot"
+    },
+    {
+      "name": "Common",
+      "path": "./packages/common"
+    }
+  ],
+  "settings": {
+    "cSpell.words": [
+      "Aktyn",
+      "Crsf",
+      "denoland",
+      "jsmpeg",
+      "Krajewski",
+      "libcamera",
+      "PYTHONUNBUFFERED",
+      "Radosław",
+      "rtsp",
+      "UART"
+    ],
+    "deno.enable": true,
+    "deno.lint": true,
+    "editor.defaultFormatter": "denoland.vscode-deno",
+    "editor.formatOnSave": true
+  }
+}

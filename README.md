@@ -1,16 +1,35 @@
 # Aktyn Drone
-Raspberry Pi to flight controller interface with p2p-based connectivity, web controls, and real-time camera stream preview
 
-### Install dependencies
+Raspberry Pi to flight controller interface with p2p-based connectivity, web controls, and real-time camera stream preview.
+
+## Project Structure
 ```
-npm install
+.
+├── packages/
+│   └── common/         # Shared types and utilities
+├── workspaces/
+│   ├── drone-computer/ # Raspberry Pi control software
+│   └── mobile-pilot/   # Web-based pilot interface
 ```
 
-### Run on Raspberry Pi
-```
-npm run start
+## Requirements
+- Deno 1.x or higher
+
+## Development
+1. Install dependencies:
+```bash
+deno task check
 ```
 
-### Open controller
-- Copy `receiver.html`, `receiver.js`, `peerjs.min.js`, `jsmpeg.min.js` and `drone-widget.png` to a web server directory or to your computer's local filesystem
-- Open `receiver.html` in a web browser
+2. Start the drone computer:
+```bash
+deno task start:drone
+```
+
+3. Start the pilot interface:
+```bash
+deno task start:pilot
+```
+
+## License
+GPL-3.0-only
