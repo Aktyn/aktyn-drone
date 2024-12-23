@@ -2,7 +2,7 @@ import { Menu } from '~/components/views/menu.tsx'
 
 function App() {
   return (
-    <div className='min-h-screen flex items-center justify-center relative overflow-hidden'>
+    <div className='min-h-screen relative overflow-hidden *:z-[3] flex flex-col justify-center items-center'>
       <div className='absolute top-0 z-[1] h-screen w-screen flex items-center justify-center'>
         <svg
           className='h-[61.8%] w-auto max-w-full fill-transparent stroke-primary/15 stroke-[0.5] animate-in fade-in duration-500'
@@ -20,9 +20,7 @@ function App() {
         </svg>
       </div>
       <div className='absolute top-0 z-[2] h-screen w-screen bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,hsl(var(--primary)/0.15),transparent)] animate-in fade-in slide-in-from-top duration-500' />
-      <div className='z-[3]'>
-        <Menu />
-      </div>
+      <Menu />
     </div>
   )
 }

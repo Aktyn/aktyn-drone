@@ -2,6 +2,7 @@
   "version": "4",
   "specifiers": {
     "npm:@deno/vite-plugin@1": "1.0.2_vite@6.0.5",
+    "npm:@radix-ui/react-separator@^1.1.1": "1.1.1_@types+react@18.3.18_@types+react-dom@18.3.5__@types+react@18.3.18_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:@radix-ui/react-slot@^1.1.1": "1.1.1_@types+react@18.3.18_react@18.3.1",
     "npm:@types/node@*": "22.5.4",
     "npm:@types/react-dom@^18.3.1": "18.3.5_@types+react@18.3.18",
@@ -163,6 +164,26 @@
       "dependencies": [
         "@types/react",
         "react"
+      ]
+    },
+    "@radix-ui/react-primitive@2.0.1_@types+react@18.3.18_@types+react-dom@18.3.5__@types+react@18.3.18_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
+      "integrity": "sha512-sHCWTtxwNn3L3fH8qAfnF3WbUZycW93SM1j3NFDzXBiz8D6F5UTTy8G1+WFEaiCdvCVRJWj6N2R4Xq6HdiHmDg==",
+      "dependencies": [
+        "@radix-ui/react-slot",
+        "@types/react",
+        "@types/react-dom",
+        "react",
+        "react-dom"
+      ]
+    },
+    "@radix-ui/react-separator@1.1.1_@types+react@18.3.18_@types+react-dom@18.3.5__@types+react@18.3.18_react@18.3.1_react-dom@18.3.1__react@18.3.1": {
+      "integrity": "sha512-RRiNRSrD8iUiXriq/Y5n4/3iE8HzqgLHsusUSg5jVpU2+3tqcUFPJXHDymwEypunc2sWxDUS3UC+rkZRlHedsw==",
+      "dependencies": [
+        "@radix-ui/react-primitive",
+        "@types/react",
+        "@types/react-dom",
+        "react",
+        "react-dom"
       ]
     },
     "@radix-ui/react-slot@1.1.1_@types+react@18.3.18_react@18.3.1": {
@@ -1019,6 +1040,7 @@
       "mobile-pilot": {
         "dependencies": [
           "npm:@deno/vite-plugin@1",
+          "npm:@radix-ui/react-separator@^1.1.1",
           "npm:@radix-ui/react-slot@^1.1.1",
           "npm:@types/react-dom@^18.3.1",
           "npm:@types/react@^18.3.12",
