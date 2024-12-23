@@ -1,16 +1,16 @@
 // @deno-types="@types/react"
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react'
 
 export function useIsMounted() {
-  const mountedRef = useRef(false);
+  const mountedRef = useRef(false)
 
   useEffect(() => {
-    mountedRef.current = true;
+    mountedRef.current = true
 
     return () => {
-      mountedRef.current = false;
-    };
-  }, []);
+      mountedRef.current = false
+    }
+  }, [])
 
-  return mountedRef;
+  return mountedRef
 }

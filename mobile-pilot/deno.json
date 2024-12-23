@@ -28,6 +28,5 @@
     "tailwind-merge": "npm:tailwind-merge@^2.2.1",
     "lucide-react": "npm:lucide-react@^0.350.0",
     "~/": "./src/"
-  },
-  "nodeModulesDir": "auto"
+  }
 }

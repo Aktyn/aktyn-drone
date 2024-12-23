@@ -2,10 +2,14 @@
   "name": "@aktyn-drone/drone-computer",
   "version": "2.0.0",
   "tasks": {
-    "start": "deno run --allow-net --allow-read --allow-env src/main.ts",
-    "dev": "deno run --watch --allow-net --allow-read --allow-env src/main.ts",
+    "start": "deno run --allow-net --allow-read --allow-ffi --allow-env --env-file=.env src/main.ts",
+    "dev": "deno run --watch --allow-net --allow-read --allow-ffi --allow-env --env-file=.env src/main.ts",
     "check": "deno check **/*.ts",
     "test": "deno test"
+  },
+  "imports": {
+    "@aktyn-drone/common": "../common/main.ts",
+    "peerjs-on-node": "npm:peerjs-on-node@^1.0.2"
   },
   "fmt": {
     "include": [
@@ -14,7 +18,11 @@
     "lineWidth": 100,
     "singleQuote": true
   },
-  "imports": {
-    "@aktyn-drone/common": "../common/main.ts"
+  "lint": {
+    "rules": {
+      "include": [
+        "no-console"
+      ]
+    }
   }
 }

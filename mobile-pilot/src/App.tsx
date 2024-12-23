@@ -6,7 +6,7 @@ function App() {
   const { isConnected } = useConnection()
 
   return (
-    <div className='min-h-svh relative overflow-hidden *:z-[3] flex flex-col justify-center items-center'>
+    <div className='min-h-dvh relative overflow-hidden *:z-[3] flex flex-col justify-center items-center'>
       <div className='absolute top-0 z-[1] h-screen w-screen flex items-center justify-center px-4'>
         <svg
           className='h-[80%] w-auto fill-transparent stroke-primary/10 stroke-[0.5] animate-in fade-in duration-500'
