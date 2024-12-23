@@ -13,8 +13,16 @@
     "@types/react": "npm:@types/react@^18.3.12",
     "@types/react-dom": "npm:@types/react-dom@^18.3.1",
     "@vitejs/plugin-react-swc": "npm:@vitejs/plugin-react-swc@^3.7.1",
+    "autoprefixer": "npm:autoprefixer@^10.4.20",
+    "postcss": "npm:postcss@^8.4.49",
     "react": "npm:react@^18.3.1",
     "react-dom": "npm:react-dom@^18.3.1",
-    "vite": "npm:vite@^6.0.1"
+    "vite": "npm:vite@^6.0.1",
+    "tailwindcss": "npm:tailwindcss@^3.4.1",
+    "tailwindcss-animate": "npm:tailwindcss-animate@^1.0.7",
+    "class-variance-authority": "npm:class-variance-authority@^0.7.0",
+    "clsx": "npm:clsx@^2.1.0",
+    "tailwind-merge": "npm:tailwind-merge@^2.2.1",
+    "lucide-react": "npm:lucide-react@^0.350.0"
   }
 }

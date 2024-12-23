@@ -1,41 +1,28 @@
-import "./App.css";
 // @deno-types="@types/react"
-import { useEffect, useState } from "react";
-// @ts-expect-error Unable to infer type at the moment
-import reactLogo from "./assets/react.svg";
-import { clamp } from "@aktyn-drone/common";
+import { useState } from "react";
 
 function App() {
   const [count, setCount] = useState(0);
 
-  useEffect(() => {
-    console.log("TEST", clamp(5, 7, 9)); //TODO
-  }, []);
-
   return (
-    <>
-      <img src="/vite-deno.svg" alt="Vite with Deno" />
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center space-y-6">
+        <h1 className="text-4xl font-bold tracking-tight">Mobile Pilot</h1>
+        <div className="space-y-4">
+          <button
+            onClick={() => setCount((count) => count + 1)}
+            className="px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            Count is {count}
+          </button>
+          <p className="text-muted-foreground">
+            Edit{" "}
+            <code className="font-mono bg-muted px-1 rounded">src/App.tsx</code>{" "}
+            and save to test HMR
+          </p>
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    </div>
   );
 }
 
