@@ -1,1 +1,1 @@
-export type MessageType = 'test' //TODO
+export type MessageType = "ping"; //TODO

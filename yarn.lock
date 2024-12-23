@@ -20,6 +20,7 @@ __metadata:
   dependencies:
     "@aktyn-drone/common": "workspace:*"
     "@types/node": "npm:^22.10.2"
+    "@types/peerjs": "npm:^1.1.0"
     "@types/ws": "npm:^8.5.10"
     dotenv: "npm:^16.3.1"
     node-rtsp-stream: "npm:^0.0.9"
@@ -929,6 +930,15 @@ __metadata:
   dependencies:
     undici-types: "npm:~6.19.2"
   checksum: 10c0/458ec725319e57d4692cbb56d81f1a90f9074cef9ec185c59e6f6c557a3d2ded57c5e443b1e82eba923d53dda4db18797fb131ee6e46fdb3d7d2f54d54aaebe3
+  languageName: node
+  linkType: hard
+
+"@types/peerjs@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@types/peerjs@npm:1.1.0"
+  dependencies:
+    peerjs: "npm:*"
+  checksum: 10c0/71466f2764bd5ca3b1f56c5004cf0b66a53354f69adf661b284e8052e6722e8c6b7125a6feb0240c6f249c620fd2e755c2800d005d917e64e89d51c24e2274ee
   languageName: node
   linkType: hard
 
@@ -2632,7 +2642,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"peerjs@npm:^1.5.4":
+"peerjs@npm:*, peerjs@npm:^1.5.4":
   version: 1.5.4
   resolution: "peerjs@npm:1.5.4"
   dependencies:

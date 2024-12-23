@@ -1,84 +1,72 @@
+import type { DataConnection, Peer as PeerType } from "../types/peerjs";
 import { logger } from "./logger";
 // import Stream from 'node-rtsp-stream'
 // import WebSocket from 'ws'
-const Peer = require("peerjs-on-node").Peer;
+const Peer = require("peerjs-on-node").Peer as typeof PeerType;
 
 export class Connection {
-  private static instance: Connection;
+  private static instance: Connection | null = null;
   public static init(peerId: string) {
     logger.log("Initializing connection with peer id:", peerId);
     this.instance = new Connection(peerId);
   }
 
+  private connections: DataConnection[] = [];
+
   private constructor(private readonly peerId: string) {
     const peer = new Peer(peerId);
-    console.log("test", peer.id); //TODO: remove
 
-    // const handleConnection = useCallback((conn: DataConnection) => {
-    //   console.log('Establishing connection with peer:', conn.peer)
-    //   setPeerError(null)
-    //   conn.on('open', () => {
-    //     console.log('Connected to peer')
-    //     setConnections((prev) => [...prev, conn])
-    //   })
-    //   conn.on('close', () => {
-    //     console.log('Connection closed')
-    //     setConnections((prev) => prev.filter((c) => c !== conn))
-    //   })
-    //   conn.on('data', (data) => {
-    //     console.log(data)
-    //   })
-    //   conn.on('error', (err) => {
-    //     console.error('Connection error', err)
-    //   })
-    // }, [])
+    peer.on("open", (id) => {
+      logger.log(`Peer ID opened. Id: ${id}`);
+    });
+    peer.on("close", () => {
+      logger.log("Peer closed");
+      this.connections = [];
+    });
 
-    // try {
-    //   const peer = new Peer(peerId)
-    //   logger.log(peer)
-    // } catch (error) {
-    //   logger.error('Error initializing peer:', error)
-    // }
-    // setPeer(peer)
-    // peer.on('open', (id) => {
-    //   console.log(`Peer ID opened. Id: ${id}`)
-    //   setSelfPeerId(id)
-    // })
-    // peer.on('close', () => {
-    //   console.log('Peer closed')
-    //   setSelfPeerId(null)
-    //   setConnections([])
-    // })
+    peer.on("connection", this.handleConnection.bind(this));
+    peer.on("error", (err) => {
+      logger.error("Peer error", err);
+    });
 
-    // peer.on('connection', handleConnection)
-    // peer.on('error', (err) => {
-    //   console.error('Peer error', err)
-    //   setPeerError(err)
-    // })
+    let reconnectingTimeout: NodeJS.Timeout | null = null;
+    peer.on("disconnected", () => {
+      if (reconnectingTimeout) {
+        clearTimeout(reconnectingTimeout);
+      }
+      logger.info("Disconnected, reconnecting in 1 second");
+      reconnectingTimeout = setTimeout(() => {
+        peer.reconnect();
+        reconnectingTimeout = null;
+      }, 1_000);
+    });
+  }
 
-    // let reconnectingTimeout: number | null = null
-    // peer.on('disconnected', () => {
-    //   if (reconnectingTimeout) {
-    //     clearTimeout(reconnectingTimeout)
-    //   }
-    //   console.info('Disconnected, reconnecting in 1 second')
-    //   reconnectingTimeout = setTimeout(() => {
-    //     peer.reconnect()
-    //     reconnectingTimeout = null
-    //   }, 1_000)
-    // })
-
-    // const connect = useCallback((peerId: string) => {
-    //   if (!peer) {
-    //     throw new Error('Peer not initialized')
-    //   }
-
-    //   const connection = peer.connect(peerId)
-    //   handleConnection(connection)
-    // }, [peer])
+  private handleConnection(conn: DataConnection) {
+    logger.log("Establishing connection with peer:", conn.peer);
+    conn.on("open", () => {
+      this.connections.push(conn);
+      logger.log("Connected to peer:", conn.peer);
+    });
+    conn.on("close", () => {
+      logger.log("Connection closed");
+      this.connections = this.connections.filter((c) => c !== conn);
+    });
+    conn.on("data", (data) => {
+      console.info("received data:", data);
+    });
+    conn.on("error", (err) => {
+      logger.error("Connection error", err.type, err.message);
+    });
   }
 
   public static broadcast(message: { type: string; data: any }) {
-    // this.peer.broadcast(message)
+    //TODO: test if this works
+    this.instance?.connections.forEach((conn) => {
+      if (conn.open) {
+        console.log("TEST");
+        conn.send(message);
+      }
+    });
   }
 }

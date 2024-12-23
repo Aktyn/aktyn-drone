@@ -4,6 +4,7 @@ import { Separator } from "~/components/ui/separator.tsx";
 import { useEffect, useState } from "react";
 import { Input } from "~/components/ui/input.tsx";
 import { useConnection } from "~/providers/connection-provider.tsx";
+import { LAST_CONNECTED_PEER_ID_KEY } from "~/lib/consts";
 
 interface ScreenOrientationLock {
   lock(orientation: "landscape" | "portrait"): Promise<void>;
@@ -17,7 +18,9 @@ export function Menu() {
   const { selfPeerId, connect, peerError } = useConnection();
 
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [peerId, setPeerId] = useState("");
+  const [peerId, setPeerId] = useState(
+    localStorage.getItem(LAST_CONNECTED_PEER_ID_KEY) ?? ""
+  );
   const [connecting, setConnecting] = useState(false);
 
   useEffect(() => {
@@ -93,7 +96,7 @@ export function Menu() {
           Your peer id: <span className="font-bold">{selfPeerId ?? "-"}</span>
         </div>
         <Input
-          className="w-80 max-w-full bg-background/50 backdrop-blur-sm"
+          className="w-80 max-w-full bg-background/50 backdrop-blur-sm text-center"
           placeholder="Enter peer id of drone computer"
           value={peerId}
           disabled={connecting || !selfPeerId}

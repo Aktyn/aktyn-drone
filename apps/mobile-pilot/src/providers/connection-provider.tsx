@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import { type DataConnection, Peer, PeerError } from "peerjs";
+import { LAST_CONNECTED_PEER_ID_KEY } from "~/lib/consts";
 
 const ConnectionContext = createContext({
   selfPeerId: null as string | null,
@@ -24,13 +25,25 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
   const handleConnection = useCallback((conn: DataConnection) => {
     console.log("Establishing connection with peer:", conn.peer);
     setPeerError(null);
+
+    // let pingInterval: NodeJS.Timeout | null = null;
     conn.on("open", () => {
       console.log("Connected to peer");
       setConnections((prev) => [...prev, conn]);
+      localStorage.setItem(LAST_CONNECTED_PEER_ID_KEY, conn.peer);
+
+      //TODO: implement ping-pong to check if connection is stable
+      // pingInterval = setInterval(() => {
+      //   conn.send({ type: "ping" });
+      // }, 1_000);
     });
     conn.on("close", () => {
       console.log("Connection closed");
       setConnections((prev) => prev.filter((c) => c !== conn));
+      // if (pingInterval) {
+      //   clearInterval(pingInterval);
+      //   pingInterval = null;
+      // }
     });
     conn.on("data", (data) => {
       console.log(data);
