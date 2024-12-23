@@ -1,5 +1,4 @@
 {
-  "name": "@aktyn-drone/mobile-pilot",
   "version": "2.0.0",
   "tasks": {
     "dev": "deno run -A --node-modules-dir npm:vite --host",
@@ -8,6 +7,7 @@
     "serve": "deno run --allow-net --allow-read jsr:@std/http@1/file-server dist/"
   },
   "imports": {
+    "~/": "./src/",
     "@aktyn-drone/common": "../common/main.ts",
     "@deno/vite-plugin": "npm:@deno/vite-plugin@^1.0.0",
     "@radix-ui/react-separator": "npm:@radix-ui/react-separator@^1.1.1",
@@ -26,7 +26,6 @@
     "class-variance-authority": "npm:class-variance-authority@^0.7.0",
     "clsx": "npm:clsx@^2.1.0",
     "tailwind-merge": "npm:tailwind-merge@^2.2.1",
-    "lucide-react": "npm:lucide-react@^0.350.0",
-    "~/": "./src/"
+    "lucide-react": "npm:lucide-react@^0.350.0"
   }
 }

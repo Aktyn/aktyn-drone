@@ -1,5 +1,4 @@
 {
-  "name": "@aktyn-drone/drone-computer",
   "version": "2.0.0",
   "tasks": {
     "start": "deno run --allow-net --allow-read --allow-ffi --allow-env --env-file=.env src/main.ts",
@@ -9,7 +8,10 @@
   },
   "imports": {
     "@aktyn-drone/common": "../common/main.ts",
-    "peerjs-on-node": "npm:peerjs-on-node@^1.0.2"
+    "node-pre-gyp": "npm:node-pre-gyp@^0.17.0",
+    "node-rtsp-stream": "npm:node-rtsp-stream@^0.0.9",
+    "peerjs-on-node": "npm:peerjs-on-node@^1.0.2",
+    "ws": "npm:ws@^8.18.0"
   },
   "fmt": {
     "include": [

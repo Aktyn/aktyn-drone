@@ -1,7 +1,11 @@
 import { logger } from './logger.ts'
 
 // const Peer = require('peerjs-on-node').Peer
+import Stream from 'npm:node-rtsp-stream'
+import WebSocket from 'npm:ws'
 import Peer from 'npm:peerjs-on-node'
+
+console.log(Stream, WebSocket, Peer)
 
 export class Connection {
   private static instance: Connection
@@ -32,12 +36,12 @@ export class Connection {
     //   })
     // }, [])
 
-    try {
-      const peer = new Peer(peerId)
-      logger.log(peer)
-    } catch (error) {
-      logger.error('Error initializing peer:', error)
-    }
+    // try {
+    //   const peer = new Peer(peerId)
+    //   logger.log(peer)
+    // } catch (error) {
+    //   logger.error('Error initializing peer:', error)
+    // }
     // setPeer(peer)
     // peer.on('open', (id) => {
     //   console.log(`Peer ID opened. Id: ${id}`)
