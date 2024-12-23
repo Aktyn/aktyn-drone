@@ -30,7 +30,8 @@
       "**/*.ts"
     ],
     "lineWidth": 100,
-    "singleQuote": true
+    "singleQuote": true,
+    "semiColons": false
   },
   "compilerOptions": {
     "strict": true,
