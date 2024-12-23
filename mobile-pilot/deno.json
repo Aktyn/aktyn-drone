@@ -16,6 +16,7 @@
     "@types/react-dom": "npm:@types/react-dom@^18.3.1",
     "@vitejs/plugin-react-swc": "npm:@vitejs/plugin-react-swc@^3.7.1",
     "autoprefixer": "npm:autoprefixer@^10.4.20",
+    "peerjs": "npm:peerjs@^1.5.4",
     "postcss": "npm:postcss@^8.4.49",
     "react": "npm:react@^18.3.1",
     "react-dom": "npm:react-dom@^18.3.1",
@@ -27,5 +28,6 @@
     "tailwind-merge": "npm:tailwind-merge@^2.2.1",
     "lucide-react": "npm:lucide-react@^0.350.0",
     "~/": "./src/"
-  }
+  },
+  "nodeModulesDir": "auto"
 }

@@ -1,3 +1,5 @@
-import { clamp } from '@aktyn-drone/common'
+import process from "node:process";
+import { randomString } from "@aktyn-drone/common";
 
-console.log('TEST', clamp(12, 7, 10))
+const peerId = process.env.PEER_ID ?? randomString(24);
+console.log("PEER_ID", peerId);

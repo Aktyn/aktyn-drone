@@ -1,11 +1,15 @@
 import { Menu } from '~/components/views/menu.tsx'
+import { useConnection } from '~/providers/connection-provider.tsx'
+import { DroneControl } from '~/components/views/drone-control.tsx'
 
 function App() {
+  const { isConnected } = useConnection()
+
   return (
-    <div className='min-h-screen relative overflow-hidden *:z-[3] flex flex-col justify-center items-center'>
-      <div className='absolute top-0 z-[1] h-screen w-screen flex items-center justify-center'>
+    <div className='min-h-svh relative overflow-hidden *:z-[3] flex flex-col justify-center items-center'>
+      <div className='absolute top-0 z-[1] h-screen w-screen flex items-center justify-center px-4'>
         <svg
-          className='h-[61.8%] w-auto max-w-full fill-transparent stroke-primary/15 stroke-[0.5] animate-in fade-in duration-500'
+          className='h-[80%] w-auto fill-transparent stroke-primary/10 stroke-[0.5] animate-in fade-in duration-500'
           viewBox='0 0 24 24'
           role='presentation'
         >
@@ -20,7 +24,7 @@ function App() {
         </svg>
       </div>
       <div className='absolute top-0 z-[2] h-screen w-screen bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,hsl(var(--primary)/0.15),transparent)] animate-in fade-in slide-in-from-top duration-500' />
-      <Menu />
+      {isConnected ? <DroneControl /> : <Menu />}
     </div>
   )
 }
