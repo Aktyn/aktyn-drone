@@ -1,0 +1,17 @@
+{
+  "name": "@aktyn-drone/common",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "src/index.ts",
+  "scripts": {
+    "dev": "tsc -w --preserveWatchOutput",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit --skipLibCheck"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3"
+  }
+}

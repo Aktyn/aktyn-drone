@@ -1,0 +1,26 @@
+{
+  "name": "aktyn-drone",
+  "version": "2.0.0",
+  "private": true,
+  "packageManager": "yarn@4.5.1",
+  "description": "Raspberry Pi to flight controller interface with p2p-based connectivity, web controls, and real-time camera stream preview",
+  "author": "Radosław Krajewski (Aktyn)",
+  "license": "GPL-3.0-only",
+  "keywords": [
+    "p2p",
+    "raspberry pi",
+    "drone",
+    "web control",
+    "real-time camera stream"
+  ],
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "yarn workspaces foreach --all --topological run build",
+    "start": "yarn workspaces foreach --all --parallel --interlaced run start",
+    "dev": "yarn workspaces foreach --all --parallel --interlaced run dev",
+    "typecheck": "yarn workspaces foreach --all run typecheck"
+  }
+}

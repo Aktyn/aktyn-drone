@@ -1,0 +1,26 @@
+{
+  "name": "@aktyn-drone/drone-computer",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Drone computer control software",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "yarn build && node dist/main.js",
+    "dev": "tsx watch --clear-screen=false src/main.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aktyn-drone/common": "workspace:*",
+    "dotenv": "^16.3.1",
+    "node-rtsp-stream": "^0.0.9",
+    "peerjs-on-node": "^1.0.2",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/ws": "^8.5.10",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.3.3"
+  }
+}

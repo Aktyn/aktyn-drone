@@ -6,15 +6,15 @@
     },
     {
       "name": "Drone computer",
-      "path": "./drone-computer"
+      "path": "./apps/drone-computer"
     },
     {
       "name": "Mobile pilot",
-      "path": "./mobile-pilot"
+      "path": "./apps/mobile-pilot"
     },
     {
       "name": "Common",
-      "path": "./common"
+      "path": "./packages/common"
     }
   ],
   "settings": {
@@ -30,19 +30,7 @@
       "rtsp",
       "UART"
     ],
-    "deno.enable": true,
-    "deno.lint": true,
-    "editor.defaultFormatter": "denoland.vscode-deno",
-    "editor.formatOnSave": true,
     "betterOpenEditors.PackagePatterns": "**/drone-computer\n**/mobile-pilot\n**/common",
-    "[tailwindcss]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode"
-    },
-    "[typescriptreact]": {
-      "editor.defaultFormatter": "denoland.vscode-deno"
-    },
-    "[typescript]": {
-      "editor.defaultFormatter": "denoland.vscode-deno"
-    }
+    "typescript.tsdk": "Drone computer/node_modules/typescript/lib"
   }
 }
