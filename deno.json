@@ -11,9 +11,10 @@
     "web control",
     "real-time camera stream"
   ],
-  "workspaces": [
-    "packages/*",
-    "workspaces/*"
+  "workspace": [
+    "drone-computer",
+    "mobile-pilot",
+    "common"
   ],
   "tasks": {
     "check": "deno check **/*.ts",

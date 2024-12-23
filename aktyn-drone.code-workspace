@@ -6,15 +6,15 @@
     },
     {
       "name": "Drone computer",
-      "path": "./workspaces/drone-computer"
+      "path": "./drone-computer"
     },
     {
       "name": "Mobile pilot",
-      "path": "./workspaces/mobile-pilot"
+      "path": "./mobile-pilot"
     },
     {
       "name": "Common",
-      "path": "./packages/common"
+      "path": "./common"
     }
   ],
   "settings": {
@@ -33,6 +33,7 @@
     "deno.enable": true,
     "deno.lint": true,
     "editor.defaultFormatter": "denoland.vscode-deno",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "betterOpenEditors.PackagePatterns": "**/drone-computer\n**/mobile-pilot\n**/common"
   }
 }

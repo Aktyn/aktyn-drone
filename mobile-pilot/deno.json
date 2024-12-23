@@ -15,6 +15,6 @@
     "singleQuote": true
   },
   "imports": {
-    "@aktyn-drone/common/": "../../packages/common/"
+    "@aktyn-drone/common": "../common"
   }
 }
