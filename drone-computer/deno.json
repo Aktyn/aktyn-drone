@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "tasks": {
     "start": "deno run --allow-net --allow-read --allow-env src/main.ts",
+    "dev": "deno run --watch --allow-net --allow-read --allow-env src/main.ts",
     "check": "deno check **/*.ts",
     "test": "deno test"
   },
@@ -14,6 +15,6 @@
     "singleQuote": true
   },
   "imports": {
-    "@aktyn-drone/common": "../common"
+    "@aktyn-drone/common": "../common/main.ts"
   }
 }

@@ -20,8 +20,10 @@
     "check": "deno check **/*.ts",
     "test": "deno test",
     "fmt": "deno fmt",
-    "start:drone": "deno task -p workspaces/drone-computer start",
-    "start:pilot": "deno task -p workspaces/mobile-pilot start"
+    "start:drone": "deno task --cwd=./drone-computer start",
+    "start:pilot": "deno task --cwd=./mobile-pilot serve",
+    "dev:drone": "deno task --cwd=./drone-computer dev",
+    "dev:pilot": "deno task --cwd=./mobile-pilot dev"
   },
   "fmt": {
     "include": [
@@ -29,5 +31,15 @@
     ],
     "lineWidth": 100,
     "singleQuote": true
+  },
+  "compilerOptions": {
+    "strict": true,
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
   }
 }

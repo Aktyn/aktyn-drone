@@ -1,5 +1,5 @@
 //@ts-check
-"use strict";
+'use strict';
 
 class PeerDataSource {
   constructor(_, options) {
@@ -7,8 +7,9 @@ class PeerDataSource {
     this.streaming = true;
     this.callbacks = { connect: [], data: [] };
     this.destination = null;
-    this.reconnectInterval =
-      options.reconnectInterval !== undefined ? options.reconnectInterval : 5;
+    this.reconnectInterval = options.reconnectInterval !== undefined
+      ? options.reconnectInterval
+      : 5;
     this.shouldAttemptReconnect = !!this.reconnectInterval;
     this.completed = false;
     this.established = false;
@@ -85,12 +86,12 @@ function connect(
   armButton,
   disarmButton,
   angleModeOnButton,
-  angleModeOffButton
+  angleModeOffButton,
 ) {
   connectButton.disabled = true;
-  connectionError.textContent = "";
+  connectionError.textContent = '';
 
-  const dronePeerId = peerIdInput?.value ?? "fallback-peer-id-aktyn-drone";
+  const dronePeerId = peerIdInput?.value ?? 'fallback-peer-id-aktyn-drone';
 
   // @ts-ignore
   const p2pPlayer = new JSMpeg.Player(null, {
@@ -101,37 +102,37 @@ function connect(
     loop: false,
     stream: true,
   });
-  console.log("p2pPlayer", p2pPlayer);
+  console.log('p2pPlayer', p2pPlayer);
 
   const conn = peer.connect(dronePeerId);
 
-  conn.on("open", () => {
-    console.log("Connected to peer");
+  conn.on('open', () => {
+    console.log('Connected to peer');
     p2pPlayer.source.onOpen();
     connectButton.disabled = true;
   });
 
-  conn.on("data", (data) => {
+  conn.on('data', (data) => {
     if (data instanceof ArrayBuffer || data instanceof Uint8Array) {
-      console.log("Received buffer data from peer");
+      console.log('Received buffer data from peer');
       p2pPlayer.source.onMessage({ data });
-    } else if (typeof data === "string") {
+    } else if (typeof data === 'string') {
       try {
         handleMessage(JSON.parse(data), dronePreview);
       } catch (error) {
-        console.error("Error parsing string data from peer:", error);
+        console.error('Error parsing string data from peer:', error);
       }
     }
   });
 
-  conn.on("close", () => {
-    console.log("Connection closed");
+  conn.on('close', () => {
+    console.log('Connection closed');
     p2pPlayer.source.onClose();
     connectButton.disabled = false;
   });
 
-  conn.on("error", (error) => {
-    console.error("Connection error:", error);
+  conn.on('error', (error) => {
+    console.error('Connection error:', error);
   });
 
   /** @param {Event} event */
@@ -140,30 +141,30 @@ function connect(
     // @ts-ignore
     const target = event.target;
     if (conn && conn.open && target?.steering) {
-      conn.send(JSON.stringify({ type: "steering", value: target.steering }));
+      conn.send(JSON.stringify({ type: 'steering', value: target.steering }));
     }
   };
 
-  steering.addEventListener("steeringChanged", handleSteeringChanged);
+  steering.addEventListener('steeringChanged', handleSteeringChanged);
 
   armButton.onclick = () => {
-    console.log("Sending arm message to drone");
-    conn.send(JSON.stringify({ type: "arm" }));
+    console.log('Sending arm message to drone');
+    conn.send(JSON.stringify({ type: 'arm' }));
   };
 
   disarmButton.onclick = () => {
-    console.log("Sending disarm message to drone");
-    conn.send(JSON.stringify({ type: "disarm" }));
+    console.log('Sending disarm message to drone');
+    conn.send(JSON.stringify({ type: 'disarm' }));
   };
 
   angleModeOnButton.onclick = () => {
-    console.log("Sending angle mode on message to drone");
-    conn.send(JSON.stringify({ type: "angleModeOn" }));
+    console.log('Sending angle mode on message to drone');
+    conn.send(JSON.stringify({ type: 'angleModeOn' }));
   };
 
   angleModeOffButton.onclick = () => {
-    console.log("Sending angle mode off message to drone");
-    conn.send(JSON.stringify({ type: "angleModeOff" }));
+    console.log('Sending angle mode off message to drone');
+    conn.send(JSON.stringify({ type: 'angleModeOff' }));
   };
 }
 
@@ -175,52 +176,54 @@ function handleMessage(message, dronePreview) {
   // console.log("handleMessage", message);
 
   switch (message.type) {
-    case "battery":
+    case 'battery':
       {
-        console.log("Battery level:", message.value);
+        console.log('Battery level:', message.value);
 
-        const batteryPercentage = document.getElementById("batteryPercentage");
+        const batteryPercentage = document.getElementById('batteryPercentage');
         if (batteryPercentage) {
           batteryPercentage.textContent = `${Math.round(message.value * 100)}%`;
         }
 
         /** @type {HTMLProgressElement | null} */
         // @ts-ignore
-        const batteryProgress = document.getElementById("battery");
+        const batteryProgress = document.getElementById('battery');
         if (batteryProgress) {
           batteryProgress.value = message.value * 100;
         }
       }
       break;
-    case "attitude":
+    case 'attitude':
       {
         const items = [
           {
-            elementId: "pitch-value",
-            cssVariable: "--pitch",
+            elementId: 'pitch-value',
+            cssVariable: '--pitch',
             value: message.value.pitch + Math.PI / 2,
           },
           {
-            elementId: "roll-value",
-            cssVariable: "--roll",
+            elementId: 'roll-value',
+            cssVariable: '--roll',
             value: message.value.roll,
           },
           {
-            elementId: "yaw-value",
-            cssVariable: "--yaw",
+            elementId: 'yaw-value',
+            cssVariable: '--yaw',
             value: message.value.yaw,
           },
         ];
         for (const item of items) {
           const itemValue = document.getElementById(item.elementId);
           if (itemValue) {
-            itemValue.textContent = `${Math.round(
-              radiansToDegrees(item.value)
-            )}°`;
+            itemValue.textContent = `${
+              Math.round(
+                radiansToDegrees(item.value),
+              )
+            }°`;
           }
           dronePreview.style.setProperty(
             item.cssVariable,
-            radiansToDegrees(item.value) + "deg"
+            radiansToDegrees(item.value) + 'deg',
           );
         }
       }
@@ -228,19 +231,18 @@ function handleMessage(message, dronePreview) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  const canvas = document.getElementById("videoPlayer");
-  const connectButton = document.getElementById("connectButton");
-  const peerIdInput = document.getElementById("peerIdInput");
-  const connectionError = document.getElementById("connectionError");
-  const dronePreview = document.getElementById("drone");
-  const toggleMoreControlsButton =
-    document.getElementById("toggleMoreControls");
-  const moreControls = document.getElementById("moreControls");
-  const armButton = document.getElementById("armButton");
-  const disarmButton = document.getElementById("disarmButton");
-  const angleModeOnButton = document.getElementById("angleModeOnButton");
-  const angleModeOffButton = document.getElementById("angleModeOffButton");
+document.addEventListener('DOMContentLoaded', function () {
+  const canvas = document.getElementById('videoPlayer');
+  const connectButton = document.getElementById('connectButton');
+  const peerIdInput = document.getElementById('peerIdInput');
+  const connectionError = document.getElementById('connectionError');
+  const dronePreview = document.getElementById('drone');
+  const toggleMoreControlsButton = document.getElementById('toggleMoreControls');
+  const moreControls = document.getElementById('moreControls');
+  const armButton = document.getElementById('armButton');
+  const disarmButton = document.getElementById('disarmButton');
+  const angleModeOnButton = document.getElementById('angleModeOnButton');
+  const angleModeOffButton = document.getElementById('angleModeOffButton');
 
   if (
     !canvas ||
@@ -256,24 +258,23 @@ document.addEventListener("DOMContentLoaded", function () {
     !angleModeOffButton
   ) {
     throw new Error(
-      "No canvas, connectButton, peerIdInput, connectionError, dronePreview, toggleMoreControlsButton, moreControls, armButton, disarmButton, angleModeOnButton or angleModeOffButton found"
+      'No canvas, connectButton, peerIdInput, connectionError, dronePreview, toggleMoreControlsButton, moreControls, armButton, disarmButton, angleModeOnButton or angleModeOffButton found',
     );
   }
 
-  toggleMoreControlsButton.addEventListener("click", () => {
-    moreControls.style.display =
-      moreControls.style.display === "none" ? "flex" : "none";
+  toggleMoreControlsButton.addEventListener('click', () => {
+    moreControls.style.display = moreControls.style.display === 'none' ? 'flex' : 'none';
   });
 
   const steering = new SteeringControls();
 
   // @ts-ignore
   const peer = new Peer();
-  peer.on("open", (/** @type {string} */ id) => {
+  peer.on('open', (/** @type {string} */ id) => {
     console.log(`Peer ID opened. Id: ${id}`);
   });
 
-  connectButton.addEventListener("click", () =>
+  connectButton.addEventListener('click', () =>
     connect(
       peer,
       steering,
@@ -286,9 +287,8 @@ document.addEventListener("DOMContentLoaded", function () {
       armButton,
       disarmButton,
       angleModeOnButton,
-      angleModeOffButton
-    )
-  );
+      angleModeOffButton,
+    ));
 });
 
 class SteeringControls extends EventTarget {
@@ -301,12 +301,12 @@ class SteeringControls extends EventTarget {
   constructor() {
     super();
 
-    this.leftJoystick = document.getElementById("leftJoystick");
-    this.rightJoystick = document.getElementById("rightJoystick");
+    this.leftJoystick = document.getElementById('leftJoystick');
+    this.rightJoystick = document.getElementById('rightJoystick');
     /** @type {HTMLProgressElement} */
     // @ts-ignore
-    this.throttle = document.getElementById("throttle");
-    this.throttlePercentage = document.getElementById("throttlePercentage");
+    this.throttle = document.getElementById('throttle');
+    this.throttlePercentage = document.getElementById('throttlePercentage');
 
     if (
       !this.leftJoystick ||
@@ -314,13 +314,13 @@ class SteeringControls extends EventTarget {
       !this.throttle ||
       !this.throttlePercentage
     ) {
-      throw new Error("No leftJoystick or rightJoystick found");
+      throw new Error('No leftJoystick or rightJoystick found');
     }
 
     for (const joystick of [this.leftJoystick, this.rightJoystick]) {
       this.setupJoystickGestures(
         joystick,
-        joystick === this.leftJoystick ? "left" : "right"
+        joystick === this.leftJoystick ? 'left' : 'right',
       );
     }
 
@@ -350,7 +350,7 @@ class SteeringControls extends EventTarget {
         this.#throttleFactor +
           this.#throttleStickValue * deltaTime * speedFactor,
         0,
-        1
+        1,
       );
 
       if (
@@ -358,10 +358,12 @@ class SteeringControls extends EventTarget {
         !this.isRestPosition
       ) {
         this.throttle.value = this.#throttleFactor * 100;
-        this.throttlePercentage.textContent = `${Math.round(
-          this.#throttleFactor * 100
-        )}%`;
-        this.dispatchEvent(new Event("steeringChanged"));
+        this.throttlePercentage.textContent = `${
+          Math.round(
+            this.#throttleFactor * 100,
+          )
+        }%`;
+        this.dispatchEvent(new Event('steeringChanged'));
       }
 
       window.requestAnimationFrame(update);
@@ -391,9 +393,9 @@ class SteeringControls extends EventTarget {
    * @param {"left" | "right"} side
    */
   setupJoystickGestures(joystick, side) {
-    const joystickButton = joystick.querySelector("button");
+    const joystickButton = joystick.querySelector('button');
     if (!joystickButton) {
-      throw new Error("No button found in joystick");
+      throw new Error('No button found in joystick');
     }
 
     let areaRect;
@@ -405,14 +407,14 @@ class SteeringControls extends EventTarget {
       areaCenterX = areaRect.left + areaRect.width / 2;
       areaCenterY = areaRect.top + areaRect.height / 2;
     };
-    window.addEventListener("resize", onWindowResize);
+    window.addEventListener('resize', onWindowResize);
     onWindowResize();
 
     let isJoystickDown = false;
 
     const onJoystickDown = (ev) => {
       isJoystickDown = true;
-      joystickButton.style.transition = "";
+      joystickButton.style.transition = '';
     };
 
     const onJoystickMove = (ev) => {
@@ -421,12 +423,12 @@ class SteeringControls extends EventTarget {
         const deltaX = clamp(
           x - areaCenterX,
           -areaRect.width / 2,
-          areaRect.width / 2
+          areaRect.width / 2,
         );
         const deltaY = clamp(
           y - areaCenterY,
           -areaRect.height / 2,
-          areaRect.height / 2
+          areaRect.height / 2,
         );
 
         joystickButton.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
@@ -434,7 +436,7 @@ class SteeringControls extends EventTarget {
         const valueX = deltaX / (areaRect.width / 2);
         const valueY = -deltaY / (areaRect.height / 2);
 
-        if (side === "left") {
+        if (side === 'left') {
           this.#throttleStickValue = valueY;
           this.#yaw = (valueX + 1) / 2;
         } else {
@@ -449,15 +451,15 @@ class SteeringControls extends EventTarget {
         return;
       }
       isJoystickDown = false;
-      joystickButton.style.transition = "transform 0.2s ease-in-out";
-      joystickButton.style.transform = "translate(0px, 0px)";
+      joystickButton.style.transition = 'transform 0.2s ease-in-out';
+      joystickButton.style.transform = 'translate(0px, 0px)';
       this.#resetJoysticks();
-      this.dispatchEvent(new Event("steeringChanged"));
+      this.dispatchEvent(new Event('steeringChanged'));
     };
 
-    joystickButton.addEventListener("pointerdown", onJoystickDown);
-    document.addEventListener("pointermove", onJoystickMove);
-    document.addEventListener("pointerup", onJoystickUp);
+    joystickButton.addEventListener('pointerdown', onJoystickDown);
+    document.addEventListener('pointermove', onJoystickMove);
+    document.addEventListener('pointerup', onJoystickUp);
   }
 }
 
