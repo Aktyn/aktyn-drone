@@ -13,6 +13,7 @@ import { Button, type ButtonProps } from "../../ui/button"
 import { type LogMessageData, Logs } from "./logs"
 import { Stats } from "./stats"
 import { useFullscreen } from "~/hooks/useFullscreen"
+import { DroneOrientationWidget } from "./drone-orientation-widget"
 
 const MINUTE = 60 * 1000
 
@@ -99,7 +100,11 @@ export function DroneControl() {
         </ScrollArea>
       </div>
       <div className="flex-grow flex flex-col overflow-hidden">
-        {view === View.DRONE_CONTROL && <div>Drone control</div>}
+        {view === View.DRONE_CONTROL && (
+          <div className="flex-grow flex items-center justify-center overflow-hidden max-h-full">
+            <DroneOrientationWidget />
+          </div>
+        )}
         {view === View.LOGS && <Logs logs={logs} onClear={handleClearLogs} />}
       </div>
     </div>
