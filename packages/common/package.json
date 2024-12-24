@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit --skipLibCheck"
   },
   "devDependencies": {
-    "@types/node": "^20.10.6",
-    "typescript": "^5.3.3"
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
   }
 }

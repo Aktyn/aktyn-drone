@@ -1,8 +1,11 @@
-import type { DataConnection, Peer as PeerType } from "../types/peerjs";
+import type { DataConnection, Peer as PeerJS } from "../types/peerjs";
+import { MessageType, type Message } from "@aktyn-drone/common";
 import { logger } from "./logger";
+import { EventEmitter } from "stream";
 // import Stream from 'node-rtsp-stream'
 // import WebSocket from 'ws'
-const Peer = require("peerjs-on-node").Peer as typeof PeerType;
+
+const Peer = require("peerjs-on-node").Peer as typeof PeerJS;
 
 export class Connection {
   private static instance: Connection | null = null;
@@ -16,21 +19,23 @@ export class Connection {
   private constructor(private readonly peerId: string) {
     const peer = new Peer(peerId);
 
-    peer.on("open", (id) => {
+    const peerEventEmitter = peer as unknown as EventEmitter;
+
+    peerEventEmitter.on("open", (id) => {
       logger.log(`Peer ID opened. Id: ${id}`);
     });
-    peer.on("close", () => {
+    peerEventEmitter.on("close", () => {
       logger.log("Peer closed");
       this.connections = [];
     });
 
-    peer.on("connection", this.handleConnection.bind(this));
-    peer.on("error", (err) => {
+    peerEventEmitter.on("connection", this.handleConnection.bind(this));
+    peerEventEmitter.on("error", (err) => {
       logger.error("Peer error", err);
     });
 
     let reconnectingTimeout: NodeJS.Timeout | null = null;
-    peer.on("disconnected", () => {
+    peerEventEmitter.on("disconnected", () => {
       if (reconnectingTimeout) {
         clearTimeout(reconnectingTimeout);
       }
@@ -42,29 +47,49 @@ export class Connection {
     });
   }
 
-  private handleConnection(conn: DataConnection) {
+  private handleConnection(conn: DataConnection & EventEmitter) {
     logger.log("Establishing connection with peer:", conn.peer);
     conn.on("open", () => {
       this.connections.push(conn);
       logger.log("Connected to peer:", conn.peer);
     });
+
     conn.on("close", () => {
       logger.log("Connection closed");
       this.connections = this.connections.filter((c) => c !== conn);
     });
+
     conn.on("data", (data) => {
-      console.info("received data:", data);
+      if (typeof data === "object" && data !== null) {
+        this.handleMessage(data, conn);
+      }
     });
+
     conn.on("error", (err) => {
       logger.error("Connection error", err.type, err.message);
     });
   }
 
-  public static broadcast(message: { type: string; data: any }) {
-    //TODO: test if this works
-    this.instance?.connections.forEach((conn) => {
+  private handleMessage(message: Message, conn: DataConnection) {
+    switch (message.type) {
+      default:
+        logger.warn("Unhandled message", message);
+        break;
+      case MessageType.PING:
+        Connection.broadcast(
+          {
+            type: MessageType.PONG,
+            data: { pingId: message.data.id },
+          },
+          [conn]
+        );
+        break;
+    }
+  }
+
+  public static broadcast(message: Message, connections?: DataConnection[]) {
+    (connections ?? this.instance?.connections ?? []).forEach((conn) => {
       if (conn.open) {
-        console.log("TEST");
         conn.send(message);
       }
     });
