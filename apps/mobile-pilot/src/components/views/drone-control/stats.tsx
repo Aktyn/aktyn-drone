@@ -1,12 +1,14 @@
-import { BatteryFull, BatteryLow, BatteryMedium } from "lucide-react"
+import { BatteryFull, BatteryLow, BatteryMedium, Gauge } from "lucide-react"
 import { useEffect, useState, type ReactNode } from "react"
 import { cn } from "~/lib/utils"
 
 export function Stats({ className }: { className?: string }) {
   const [batteryLevel, setBatteryLevel] = useState(0)
+  const [speedKmH, setSpeedKmH] = useState(0)
 
   useEffect(() => {
     setBatteryLevel(Math.random())
+    setSpeedKmH(Math.random() * 100)
   }, [])
 
   //TODO: listen to drone stats and update the UI
@@ -15,7 +17,7 @@ export function Stats({ className }: { className?: string }) {
   // })
 
   return (
-    <div className={cn("flex items-center gap-x-2", className)}>
+    <div className={cn("flex items-center gap-x-3", className)}>
       <StatsItem
         className={cn(
           batteryLevel > 0.66
@@ -37,6 +39,16 @@ export function Stats({ className }: { className?: string }) {
             <BatteryLow />
           )
         }
+      />
+      <StatsItem
+        label="Speed:"
+        value={
+          new Intl.NumberFormat(undefined, {
+            style: "decimal",
+            maximumFractionDigits: 2,
+          }).format(speedKmH) + " km/h"
+        }
+        icon={<Gauge />}
       />
     </div>
   )

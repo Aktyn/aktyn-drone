@@ -33,7 +33,7 @@ export function DroneControl() {
 
   const [logs, setLogs] = useState<Array<LogMessageData | string>>([])
   const [view, setView] = useState<View>(View.DRONE_CONTROL)
-  const [coordinates, _setCoordinates] = useState<{
+  const [coordinates] = useState<{
     latitude: number
     longitude: number
   } | null>(null)
