@@ -36,8 +36,8 @@ function App() {
         className={cn(
           "absolute bottom-2 right-2 flex flex-col gap-y-2 rounded-lg overflow-hidden bg-orange-400/20 text-orange-100 border border-orange-400 backdrop-blur-sm text-sm font-semibold transition-transform",
           isConnected && unstableConnection
-            ? "translate-y-0 pointer-events-auto"
-            : "translate-y-32 pointer-events-none",
+            ? "translate-x-0 pointer-events-auto"
+            : "translate-x-64 pointer-events-none",
         )}
       >
         <div className="flex items-center gap-x-2 p-3 pb-0">

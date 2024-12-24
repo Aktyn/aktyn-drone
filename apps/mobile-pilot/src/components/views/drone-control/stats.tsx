@@ -22,7 +22,7 @@ export function Stats({ className }: { className?: string }) {
             ? "text-green-400"
             : batteryLevel > 0.33
               ? "text-yellow-400"
-              : "text-red-400",
+              : "text-red-400 animate-pulse",
         )}
         label="Battery:"
         value={new Intl.NumberFormat(undefined, { style: "percent" }).format(
