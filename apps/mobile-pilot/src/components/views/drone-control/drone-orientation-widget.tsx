@@ -49,28 +49,31 @@ export function DroneOrientationWidget() {
     container.appendChild(renderer.domElement)
 
     const loader = new STLLoader()
-    loader.load("/quadcopter.stl", (geometry) => {
-      const material = new THREE.MeshPhongMaterial({
-        color: 0xffffff,
-        specular: 0xffffff,
-        shininess: 20,
+    loader
+      .loadAsync("/quadcopter.stl")
+      .then((geometry) => {
+        const material = new THREE.MeshPhongMaterial({
+          color: 0xffffff,
+          specular: 0xffffff,
+          shininess: 20,
+        })
+        geometry.computeVertexNormals()
+        const mesh = new THREE.Mesh(geometry, material)
+
+        geometry.center()
+        camera.lookAt(mesh.position)
+
+        const ambientLight = new THREE.AmbientLight(0x070e15, 10)
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
+        directionalLight.position.set(0, -5, 20)
+
+        scene.add(ambientLight)
+        scene.add(directionalLight)
+        scene.add(mesh)
+
+        setMesh(mesh)
       })
-      geometry.computeVertexNormals()
-      const mesh = new THREE.Mesh(geometry, material)
-
-      geometry.center()
-      camera.lookAt(mesh.position)
-
-      const ambientLight = new THREE.AmbientLight(0x070e15, 10)
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
-      directionalLight.position.set(0, -5, 20)
-
-      scene.add(ambientLight)
-      scene.add(directionalLight)
-      scene.add(mesh)
-
-      setMesh(mesh)
-    })
+      .catch(console.error)
 
     function animate() {
       requestAnimationFrame(animate)

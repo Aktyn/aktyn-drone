@@ -1,24 +1,26 @@
 import { MessageType } from "@aktyn-drone/common"
-import { Joystick, Logs as LogsIcon, Unplug } from "lucide-react"
+import { Joystick, Logs as LogsIcon, MapIcon, Unplug } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { FullscreenToggle } from "~/components/common/fullscreen-toggle"
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
 import { Separator } from "~/components/ui/separator"
+import { useFullscreen } from "~/hooks/useFullscreen"
 import { cn } from "~/lib/utils"
 import {
   useConnection,
   useConnectionMessageHandler,
 } from "~/providers/connection-provider"
 import { Button, type ButtonProps } from "../../ui/button"
+import { ControlPanel } from "./control-panel"
 import { type LogMessageData, Logs } from "./logs"
 import { Stats } from "./stats"
-import { useFullscreen } from "~/hooks/useFullscreen"
-import { DroneOrientationWidget } from "./drone-orientation-widget"
+import { Map } from "./map"
 
 const MINUTE = 60 * 1000
 
 enum View {
   DRONE_CONTROL = "drone-control",
+  MAP = "map",
   LOGS = "logs",
 }
 
@@ -78,6 +80,13 @@ export function DroneControl() {
               <span>Drone control</span>
             </NavItem>
             <NavItem
+              active={view === View.MAP}
+              onClick={() => setView(View.MAP)}
+            >
+              <MapIcon />
+              <span>Map</span>
+            </NavItem>
+            <NavItem
               active={view === View.LOGS}
               onClick={() => setView(View.LOGS)}
             >
@@ -100,11 +109,8 @@ export function DroneControl() {
         </ScrollArea>
       </div>
       <div className="flex-grow flex flex-col overflow-hidden">
-        {view === View.DRONE_CONTROL && (
-          <div className="flex-grow flex items-center justify-center overflow-hidden max-h-full">
-            <DroneOrientationWidget />
-          </div>
-        )}
+        {view === View.DRONE_CONTROL && <ControlPanel />}
+        {view === View.MAP && <Map />}
         {view === View.LOGS && <Logs logs={logs} onClear={handleClearLogs} />}
       </div>
     </div>
