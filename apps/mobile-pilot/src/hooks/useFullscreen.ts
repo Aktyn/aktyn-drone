@@ -9,15 +9,15 @@ interface ExtendedScreen extends Screen {
 }
 
 export function useFullscreen() {
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(checkFullscreen())
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      const hasFullscreenElement = !!document.fullscreenElement
+      const hasFullscreen = checkFullscreen()
 
-      setIsFullscreen(hasFullscreenElement)
+      setIsFullscreen(hasFullscreen)
 
-      if (hasFullscreenElement) {
+      if (hasFullscreen) {
         const extendedScreen = screen as ExtendedScreen
         if (extendedScreen.orientation?.lock) {
           extendedScreen.orientation
@@ -53,4 +53,13 @@ export function useFullscreen() {
     () => ({ isFullscreen, toggleFullscreen }),
     [isFullscreen, toggleFullscreen],
   )
+}
+
+function checkFullscreen() {
+  try {
+    return !!document.fullscreenElement
+  } catch (error) {
+    console.error("Error checking fullscreen:", error)
+    return false
+  }
 }

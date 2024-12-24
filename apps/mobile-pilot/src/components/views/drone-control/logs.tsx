@@ -26,7 +26,7 @@ export const Logs = memo(({ logs, onClear }: LogsProps) => {
   return (
     <div
       ref={containerRef}
-      className="flex-grow m-2 bg-background/50 border rounded-lg animate-in fade-in [&_pre]:text-xs [&_pre]:break-words [&_pre]:whitespace-pre-wrap overflow-hidden flex relative"
+      className="flex-grow m-2 mt-0 bg-background/50 border rounded-lg animate-in fade-in [&_pre]:text-xs [&_pre]:break-words [&_pre]:whitespace-pre-wrap overflow-hidden flex relative"
     >
       <ScrollArea className="p-2 w-full">
         {logs.map((log, index, arr) =>

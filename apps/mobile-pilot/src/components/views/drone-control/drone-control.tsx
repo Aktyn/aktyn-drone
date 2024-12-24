@@ -15,6 +15,7 @@ import { ControlPanel } from "./control-panel"
 import { type LogMessageData, Logs } from "./logs"
 import { Stats } from "./stats"
 import { Map } from "./map"
+import { useStateToRef } from "~/hooks/useStateToRef"
 
 const MINUTE = 60 * 1000
 
@@ -32,9 +33,14 @@ export function DroneControl() {
 
   const [logs, setLogs] = useState<Array<LogMessageData | string>>([])
   const [view, setView] = useState<View>(View.DRONE_CONTROL)
+  const [coordinates, _setCoordinates] = useState<{
+    latitude: number
+    longitude: number
+  } | null>(null)
 
+  const isFullScreenRef = useStateToRef(isFullscreen)
   useEffect(() => {
-    if (!isFullscreen) {
+    if (!isFullScreenRef.current) {
       void toggleFullscreen()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -68,7 +74,7 @@ export function DroneControl() {
 
   return (
     <div className="flex-grow flex flex-col w-full max-h-dvh overflow-hidden">
-      <div className="flex flex-wrap-reverse gap-1 items-center justify-between pt-2 animate-in slide-in-from-top">
+      <div className="flex flex-wrap-reverse gap-1 items-center justify-between py-2 animate-in slide-in-from-top">
         <Stats className="px-2" />
         <ScrollArea className="ml-auto">
           <nav className="flex items-center gap-x-2 px-2">
@@ -110,7 +116,17 @@ export function DroneControl() {
       </div>
       <div className="flex-grow flex flex-col overflow-hidden">
         {view === View.DRONE_CONTROL && <ControlPanel />}
-        {view === View.MAP && <Map />}
+        {view === View.MAP &&
+          (coordinates ? (
+            <Map
+              latitude={coordinates.latitude}
+              longitude={coordinates.longitude}
+            />
+          ) : (
+            <div className="flex-grow flex items-center justify-center font-bold text-lg text-muted-foreground">
+              Awaiting GPS coordinates...
+            </div>
+          ))}
         {view === View.LOGS && <Logs logs={logs} onClear={handleClearLogs} />}
       </div>
     </div>
