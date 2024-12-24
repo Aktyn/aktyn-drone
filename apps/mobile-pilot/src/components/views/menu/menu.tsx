@@ -1,65 +1,18 @@
-import { Fullscreen, Minimize } from "lucide-react"
 import { Button } from "~/components/ui/button.tsx"
 import { Separator } from "~/components/ui/separator.tsx"
 import { useEffect, useState } from "react"
 import { Input } from "~/components/ui/input.tsx"
 import { useConnection } from "~/providers/connection-provider.tsx"
 import { LAST_CONNECTED_PEER_ID_KEY } from "~/lib/consts"
-
-interface ScreenOrientationLock {
-  lock(orientation: "landscape" | "portrait"): Promise<void>
-}
-
-interface ExtendedScreen extends Screen {
-  orientation: ScreenOrientation & ScreenOrientationLock
-}
+import { FullscreenToggle } from "~/components/common/fullscreen-toggle"
 
 export function Menu() {
   const { selfPeerId, connect, peerError } = useConnection()
 
-  const [isFullscreen, setIsFullscreen] = useState(false)
   const [peerId, setPeerId] = useState(
     localStorage.getItem(LAST_CONNECTED_PEER_ID_KEY) ?? "",
   )
   const [connecting, setConnecting] = useState(false)
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      const hasFullscreenElement = !!document.fullscreenElement
-
-      setIsFullscreen(hasFullscreenElement)
-
-      if (hasFullscreenElement) {
-        const extendedScreen = screen as ExtendedScreen
-        if (extendedScreen.orientation?.lock) {
-          extendedScreen.orientation
-            .lock("landscape")
-            .catch((error: Error) =>
-              console.warn("Failed to lock screen orientation:", error),
-            )
-        }
-      }
-    }
-    handleFullscreenChange()
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange)
-
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange)
-    }
-  }, [])
-
-  const toggleFullscreen = async () => {
-    try {
-      if (!document.fullscreenElement) {
-        await document.documentElement.requestFullscreen()
-      } else {
-        await document.exitFullscreen()
-      }
-    } catch (error) {
-      console.error("Error toggling fullscreen:", error)
-    }
-  }
 
   useEffect(() => {
     if (peerError) {
@@ -82,17 +35,10 @@ export function Menu() {
         <span className="col-start-2 text-3xl font-bold p-4 text-center">
           Aktyn Drone Pilot
         </span>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="justify-self-end m-2 [&_svg]:size-6"
-          onClick={toggleFullscreen}
-        >
-          {isFullscreen ? <Minimize /> : <Fullscreen />}
-        </Button>
+        <FullscreenToggle className="justify-self-end m-2" />
       </div>
       <div className="flex-grow flex flex-col items-center justify-center gap-4 animate-in zoom-in-50 fade-in">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-center text-sm text-pretty text-muted-foreground">
           Your peer id: <span className="font-bold">{selfPeerId ?? "-"}</span>
         </div>
         <Input

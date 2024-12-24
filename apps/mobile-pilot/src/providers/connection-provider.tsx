@@ -6,6 +6,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react"
 import { useStateToRef } from "~/hooks/useStateToRef"
@@ -19,9 +20,15 @@ const ConnectionContext = createContext({
   peerError: null as PeerError<string> | null,
   unstableConnection: false,
   send: (_message: Message) => {},
+  addMessageListener: (_listener: MessageListener) => {},
+  removeMessageListener: (_listener: MessageListener) => {},
 })
 
+type MessageListener = (message: Message, connection: DataConnection) => void
+
 export function ConnectionProvider({ children }: PropsWithChildren) {
+  const listenersRef = useRef<MessageListener[]>([])
+
   const [selfPeerId, setSelfPeerId] = useState<string | null>(null)
   const [peer, setPeer] = useState<Peer | null>(null)
   const [connections, setConnections] = useState<DataConnection[]>([])
@@ -92,11 +99,19 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
           default:
             console.warn("Unhandled message", message)
             break
+
           case MessageType.PONG:
             setUnstableConnection(message.data.pingId !== awaitingId)
             awaitingId = null
             break
+          case MessageType.LOG:
+            // noop
+            break
         }
+
+        listenersRef.current.forEach((listener) => {
+          listener(message, conn)
+        })
       }
     },
     [broadcast],
@@ -163,7 +178,13 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
     }
   }, [peer])
 
-  //TODO: receive and show logs (<pre>) from drone-computer
+  const addMessageListener = useCallback((listener: MessageListener) => {
+    listenersRef.current.push(listener)
+  }, [])
+
+  const removeMessageListener = useCallback((listener: MessageListener) => {
+    listenersRef.current = listenersRef.current.filter((l) => l !== listener)
+  }, [])
 
   return (
     <ConnectionContext.Provider
@@ -175,6 +196,8 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
         peerError,
         unstableConnection,
         send: broadcast,
+        addMessageListener,
+        removeMessageListener,
       }}
     >
       {children}
@@ -185,4 +208,17 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
 // eslint-disable-next-line react-refresh/only-export-components
 export function useConnection() {
   return useContext(ConnectionContext)
+}
+
+// eslint-disable-next-line react-refresh/only-export-components
+export function useConnectionMessageHandler(callback: MessageListener) {
+  const { addMessageListener, removeMessageListener } = useConnection()
+
+  useEffect(() => {
+    addMessageListener(callback)
+    return () => {
+      removeMessageListener(callback)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 }

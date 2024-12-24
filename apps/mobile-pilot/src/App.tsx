@@ -1,6 +1,6 @@
 import { ServerCrash, Unplug } from "lucide-react"
-import { DroneControl } from "~/components/views/drone-control.tsx"
-import { Menu } from "~/components/views/menu.tsx"
+import { DroneControl } from "~/components/views/drone-control/drone-control"
+import { Menu } from "~/components/views/menu/menu"
 import { useConnection } from "~/providers/connection-provider.tsx"
 import { cn } from "./lib/utils"
 import { Button } from "./components/ui/button"

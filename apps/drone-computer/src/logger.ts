@@ -21,6 +21,7 @@ function logFunctionFactory<MethodType extends keyof LogFunctions & string>(
       type: MessageType.LOG,
       data: {
         method,
+        timestamp: Date.now(),
         args,
       },
     })

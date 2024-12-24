@@ -28,6 +28,7 @@ export type Message =
       MessageType.LOG,
       {
         method: keyof LogFunctions
-        args: never[]
+        timestamp: number
+        args: unknown[]
       }
     >

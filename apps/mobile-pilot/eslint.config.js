@@ -10,13 +10,7 @@ import typescriptEslint from "typescript-eslint"
 
 export default tseslint.config(
   {
-    ignores: [
-      "dist",
-      "node_modules",
-      ".storybook",
-      "vite.config.ts",
-      "vitest.workspace.ts",
-    ],
+    ignores: ["dist", "node_modules", "vite.config.ts"],
   },
   {
     extends: [
@@ -47,15 +41,6 @@ export default tseslint.config(
         "warn",
         {
           allowConstantExport: true,
-          allowExportNames: [
-            "meta",
-            "links",
-            "headers",
-            "loader",
-            "action",
-            "clientLoader",
-            "clientAction",
-          ],
         },
       ],
       "prettier/prettier": "error",
