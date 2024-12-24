@@ -1,4 +1,4 @@
-import type { LogFunctions } from "./utils/types";
+import type { LogFunctions } from "./utils/types"
 
 export enum MessageType {
   PING = "ping",
@@ -7,27 +7,27 @@ export enum MessageType {
 }
 
 type MessageBase<Type extends MessageType, Data extends object> = {
-  type: Type;
-  data: Data;
-};
+  type: Type
+  data: Data
+}
 
 export type Message =
   | MessageBase<
       MessageType.PING,
       {
-        id: number | string;
+        id: number | string
       }
     >
   | MessageBase<
       MessageType.PONG,
       {
-        pingId: number | string;
+        pingId: number | string
       }
     >
   | MessageBase<
       MessageType.LOG,
       {
-        method: keyof LogFunctions;
-        args: any[];
+        method: keyof LogFunctions
+        args: never[]
       }
-    >;
+    >

@@ -1,12 +1,12 @@
-import { ServerCrash, Unplug } from "lucide-react";
-import { DroneControl } from "~/components/views/drone-control.tsx";
-import { Menu } from "~/components/views/menu.tsx";
-import { useConnection } from "~/providers/connection-provider.tsx";
-import { cn } from "./lib/utils";
-import { Button } from "./components/ui/button";
+import { ServerCrash, Unplug } from "lucide-react"
+import { DroneControl } from "~/components/views/drone-control.tsx"
+import { Menu } from "~/components/views/menu.tsx"
+import { useConnection } from "~/providers/connection-provider.tsx"
+import { cn } from "./lib/utils"
+import { Button } from "./components/ui/button"
 
 function App() {
-  const { isConnected, unstableConnection, disconnect } = useConnection();
+  const { isConnected, unstableConnection, disconnect } = useConnection()
 
   return (
     <div className="min-h-dvh relative overflow-hidden *:z-[3] flex flex-col justify-center items-center">
@@ -37,7 +37,7 @@ function App() {
           "absolute bottom-2 right-2 flex flex-col gap-y-2 rounded-lg overflow-hidden bg-orange-400/20 text-orange-100 border border-orange-400 backdrop-blur-sm text-sm font-semibold transition-transform",
           isConnected && unstableConnection
             ? "translate-y-0 pointer-events-auto"
-            : "translate-y-32 pointer-events-none"
+            : "translate-y-32 pointer-events-none",
         )}
       >
         <div className="flex items-center gap-x-2 p-3 pb-0">
@@ -56,7 +56,7 @@ function App() {
         </Button>
       </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

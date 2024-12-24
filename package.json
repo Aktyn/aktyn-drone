@@ -21,6 +21,8 @@
     "build": "yarn workspaces foreach --all --topological run build",
     "start": "yarn workspaces foreach --all --parallel --interlaced run start",
     "dev": "yarn workspaces foreach --all --parallel --interlaced run dev",
-    "typecheck": "yarn workspaces foreach --all run typecheck"
+    "typecheck": "yarn workspaces foreach --all run typecheck",
+    "lint": "yarn workspaces foreach --all run lint",
+    "format": "yarn workspaces foreach --all run format"
   }
 }

@@ -1,80 +1,80 @@
-import { Fullscreen, Minimize } from "lucide-react";
-import { Button } from "~/components/ui/button.tsx";
-import { Separator } from "~/components/ui/separator.tsx";
-import { useEffect, useState } from "react";
-import { Input } from "~/components/ui/input.tsx";
-import { useConnection } from "~/providers/connection-provider.tsx";
-import { LAST_CONNECTED_PEER_ID_KEY } from "~/lib/consts";
+import { Fullscreen, Minimize } from "lucide-react"
+import { Button } from "~/components/ui/button.tsx"
+import { Separator } from "~/components/ui/separator.tsx"
+import { useEffect, useState } from "react"
+import { Input } from "~/components/ui/input.tsx"
+import { useConnection } from "~/providers/connection-provider.tsx"
+import { LAST_CONNECTED_PEER_ID_KEY } from "~/lib/consts"
 
 interface ScreenOrientationLock {
-  lock(orientation: "landscape" | "portrait"): Promise<void>;
+  lock(orientation: "landscape" | "portrait"): Promise<void>
 }
 
 interface ExtendedScreen extends Screen {
-  orientation: ScreenOrientation & ScreenOrientationLock;
+  orientation: ScreenOrientation & ScreenOrientationLock
 }
 
 export function Menu() {
-  const { selfPeerId, connect, peerError } = useConnection();
+  const { selfPeerId, connect, peerError } = useConnection()
 
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [peerId, setPeerId] = useState(
-    localStorage.getItem(LAST_CONNECTED_PEER_ID_KEY) ?? ""
-  );
-  const [connecting, setConnecting] = useState(false);
+    localStorage.getItem(LAST_CONNECTED_PEER_ID_KEY) ?? "",
+  )
+  const [connecting, setConnecting] = useState(false)
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      const hasFullscreenElement = !!document.fullscreenElement;
+      const hasFullscreenElement = !!document.fullscreenElement
 
-      setIsFullscreen(hasFullscreenElement);
+      setIsFullscreen(hasFullscreenElement)
 
       if (hasFullscreenElement) {
-        const extendedScreen = screen as ExtendedScreen;
+        const extendedScreen = screen as ExtendedScreen
         if (extendedScreen.orientation?.lock) {
           extendedScreen.orientation
             .lock("landscape")
             .catch((error: Error) =>
-              console.warn("Failed to lock screen orientation:", error)
-            );
+              console.warn("Failed to lock screen orientation:", error),
+            )
         }
       }
-    };
-    handleFullscreenChange();
+    }
+    handleFullscreenChange()
 
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange)
 
     return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
-  }, []);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange)
+    }
+  }, [])
 
   const toggleFullscreen = async () => {
     try {
       if (!document.fullscreenElement) {
-        await document.documentElement.requestFullscreen();
+        await document.documentElement.requestFullscreen()
       } else {
-        await document.exitFullscreen();
+        await document.exitFullscreen()
       }
     } catch (error) {
-      console.error("Error toggling fullscreen:", error);
+      console.error("Error toggling fullscreen:", error)
     }
-  };
+  }
 
   useEffect(() => {
     if (peerError) {
-      setConnecting(false);
+      setConnecting(false)
     }
-  }, [peerError]);
+  }, [peerError])
 
   const handleConnect = () => {
     if (!peerId) {
-      throw new Error("Peer id is required");
+      throw new Error("Peer id is required")
     }
 
-    setConnecting(true);
-    connect(peerId);
-  };
+    setConnecting(true)
+    connect(peerId)
+  }
 
   return (
     <div className="flex-grow grid grid-rows-[1fr_auto_1fr] items-between justify-stretch w-full h-full">
@@ -103,7 +103,7 @@ export function Menu() {
           onChange={(event) => setPeerId(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
-              handleConnect();
+              handleConnect()
             }
           }}
         />
@@ -136,5 +136,5 @@ export function Menu() {
         </div>
       </footer>
     </div>
-  );
+  )
 }

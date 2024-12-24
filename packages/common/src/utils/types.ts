@@ -1,9 +1,9 @@
 export type LogFunctions = {
   [key in keyof typeof console as (typeof console)[key] extends (
-    ...args: any[]
+    ...args: never[]
   ) => void
     ? key extends string
       ? key
       : never
-    : never]: (typeof console)[key];
-};
+    : never]: (typeof console)[key]
+}

@@ -28,6 +28,7 @@
       "PYTHONUNBUFFERED",
       "Radosław",
       "rtsp",
+      "tseslint",
       "UART"
     ],
     "betterOpenEditors.PackagePatterns": "**/drone-computer\n**/mobile-pilot\n**/common",
