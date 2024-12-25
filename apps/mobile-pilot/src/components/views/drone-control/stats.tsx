@@ -45,7 +45,7 @@ export function Stats({ className }: { className?: string }) {
         value={
           new Intl.NumberFormat(undefined, {
             style: "decimal",
-            maximumFractionDigits: 2,
+            maximumFractionDigits: 0,
           }).format(speedKmH) + " km/h"
         }
         icon={<Gauge />}

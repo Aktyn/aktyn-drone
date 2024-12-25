@@ -1,4 +1,4 @@
-import { type Message, MessageType } from "@aktyn-drone/common"
+import { type Message, MessageType, uuid } from "@aktyn-drone/common"
 import { type DataConnection, Peer, type PeerError } from "peerjs"
 import {
   createContext,
@@ -40,7 +40,12 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
     (message: Message, connections?: DataConnection[]) => {
       ;(connections ?? connectionsRef.current).forEach((conn) => {
         if (conn.open) {
-          void conn.send(message)
+          const result = conn.send(JSON.stringify(message))
+          if (result instanceof Promise) {
+            result.catch((error) => {
+              console.error("Error sending message", error)
+            })
+          }
         }
       })
     },
@@ -62,7 +67,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
         pingInterval = setInterval(() => {
           setUnstableConnection(!!awaitingId)
 
-          const id = crypto.randomUUID()
+          const id = uuid()
           awaitingId = id
           broadcast(
             {
@@ -87,6 +92,12 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
       conn.on("data", (data) => {
         if (typeof data === "object" && data !== null) {
           handleMessage(data as Message)
+        } else if (typeof data === "string") {
+          try {
+            handleMessage(JSON.parse(data))
+          } catch (error) {
+            console.error("Error parsing message", error)
+          }
         }
       })
 

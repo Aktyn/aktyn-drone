@@ -2,8 +2,6 @@ import type { DataConnection, Peer as PeerJS } from "../types/peerjs"
 import { MessageType, type Message } from "@aktyn-drone/common"
 import { logger } from "./logger"
 import { type EventEmitter } from "stream"
-// import Stream from 'node-rtsp-stream'
-// import WebSocket from 'ws'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Peer = require("peerjs-on-node").Peer as typeof PeerJS
@@ -16,6 +14,10 @@ export class Connection {
   }
 
   private connections: DataConnection[] = []
+
+  public static hasConnections() {
+    return !!this.instance?.connections.length
+  }
 
   private constructor(private readonly peerId: string) {
     const peer = new Peer(peerId)
@@ -63,6 +65,12 @@ export class Connection {
     conn.on("data", (data) => {
       if (typeof data === "object" && data !== null) {
         this.handleMessage(data, conn)
+      } else if (typeof data === "string") {
+        try {
+          this.handleMessage(JSON.parse(data), conn)
+        } catch (error) {
+          logger.error("Error parsing message", error)
+        }
       }
     })
 
@@ -91,8 +99,36 @@ export class Connection {
   public static broadcast(message: Message, connections?: DataConnection[]) {
     ;(connections ?? this.instance?.connections ?? []).forEach((conn) => {
       if (conn.open) {
-        void conn.send(message)
+        handleSend(conn.send(JSON.stringify(message)))
       }
     })
   }
+
+  public static broadcastBytes(
+    bytes: Uint8Array,
+    connections?: DataConnection[],
+  ) {
+    ;(connections ?? this.instance?.connections ?? []).forEach((conn) => {
+      if (conn.open) {
+        try {
+          const base64 = uint8ArrayToBase64(bytes)
+          handleSend(conn.send(base64, true))
+        } catch (error) {
+          console.error("Error sending message", error)
+        }
+      }
+    })
+  }
+}
+
+function handleSend(result: void | Promise<void>) {
+  if (result instanceof Promise) {
+    result.catch((error) => {
+      console.error("Error sending message", error)
+    })
+  }
+}
+
+function uint8ArrayToBase64(uint8Array: Uint8Array) {
+  return Buffer.from(uint8Array).toString("base64")
 }

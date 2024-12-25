@@ -12,6 +12,9 @@
     "lint": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts"
   },
+  "dependencies": {
+    "uuid": "^11.0.3"
+  },
   "devDependencies": {
     "@eslint/js": "^8.57.0",
     "@types/node": "^22.10.2",
