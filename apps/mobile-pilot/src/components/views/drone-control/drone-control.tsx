@@ -16,6 +16,7 @@ import { type LogMessageData, Logs } from "./logs"
 import { Stats } from "./stats"
 import { Map } from "./map"
 import { useStateToRef } from "~/hooks/useStateToRef"
+import { DroneCameraPreview } from "./drone-camera-preview"
 
 const MINUTE = 60 * 1000
 
@@ -37,6 +38,10 @@ export function DroneControl() {
     latitude: number
     longitude: number
   } | null>(null)
+  // {
+  // latitude: 51.5074,
+  // longitude: -0.1278,
+  // }
 
   const isFullScreenRef = useStateToRef(isFullscreen)
   useEffect(() => {
@@ -123,8 +128,9 @@ export function DroneControl() {
               longitude={coordinates.longitude}
             />
           ) : (
-            <div className="flex-grow flex items-center justify-center font-bold text-lg text-muted-foreground">
-              Awaiting GPS coordinates...
+            <div className="flex-grow flex flex-col items-center justify-center gap-2 pb-2 font-bold text-lg text-muted-foreground overflow-hidden">
+              <div>Awaiting GPS coordinates...</div>
+              <DroneCameraPreview className="max-h-[100%] aspect-[4/3]" />
             </div>
           ))}
         {view === View.LOGS && <Logs logs={logs} onClear={handleClearLogs} />}

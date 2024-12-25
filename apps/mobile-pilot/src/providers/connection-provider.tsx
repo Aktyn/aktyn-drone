@@ -116,6 +116,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
             awaitingId = null
             break
           case MessageType.LOG:
+          case MessageType.CAMERA_DATA:
             // noop
             break
         }

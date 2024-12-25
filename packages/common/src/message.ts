@@ -4,6 +4,8 @@ export enum MessageType {
   PING = "ping",
   PONG = "pong",
   LOG = "log",
+  REQUEST_CAMERA_STREAM = "request_camera_stream",
+  CAMERA_DATA = "camera_data",
 }
 
 type MessageBase<Type extends MessageType, Data extends object> = {
@@ -30,5 +32,18 @@ export type Message =
         method: keyof LogFunctions
         timestamp: number
         args: unknown[]
+      }
+    >
+  | MessageBase<
+      MessageType.REQUEST_CAMERA_STREAM,
+      {
+        width: number
+        height: number
+      }
+    >
+  | MessageBase<
+      MessageType.CAMERA_DATA,
+      {
+        base64: string
       }
     >

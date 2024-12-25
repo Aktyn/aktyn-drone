@@ -1,16 +1,18 @@
-import { spawn, execSync } from "child_process"
+import {
+  type ChildProcessWithoutNullStreams,
+  execSync,
+  spawn,
+} from "child_process"
 import { logger } from "../logger"
 
 const executable = "rpicam-vid"
 
 export function startCamera(url: string, width = 480, height = 360) {
-  logger.info("Starting camera listening on:", url)
-
   try {
     execSync(`pkill -f ${executable}`)
-    logger.info("Killed existing rpicam-vid processes")
+    logger.warn("Killed existing rpicam-vid processes")
   } catch (error) {
-    logger.log("No existing rpicam-vid processes found")
+    // noop
   }
 
   const args = [
@@ -38,8 +40,29 @@ export function startCamera(url: string, width = 480, height = 360) {
     url,
   ]
 
-  logger.log(`Spawning rpicam-vid ${args.join(" ")}`)
-  return spawn(executable, args, {
-    stdio: "pipe",
+  return new Promise<ChildProcessWithoutNullStreams>((resolve, reject) => {
+    logger.log(`Spawning rpicam-vid ${args.join(" ")}`)
+    const camProcess = spawn(executable, args, {
+      stdio: "pipe",
+    })
+
+    let timeout: NodeJS.Timeout | null = setTimeout(() => {
+      timeout = null
+      reject(new Error("Timeout waiting for camera stream"))
+    }, 10_000)
+
+    camProcess.stdio[2]?.on("data", (data) => {
+      try {
+        const message = Buffer.from(data).toString("utf8")
+        // logger.log(message)
+
+        if (message.match(/Registered camera/i) && timeout) {
+          clearTimeout(timeout)
+          resolve(camProcess)
+        }
+      } catch (error) {
+        reject(error)
+      }
+    })
   })
 }

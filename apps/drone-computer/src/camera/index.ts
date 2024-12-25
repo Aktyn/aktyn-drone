@@ -4,6 +4,7 @@ import { Connection } from "../p2p"
 //@ts-expect-error There are no types for node-rtsp-stream
 import Stream from "node-rtsp-stream"
 import { startCamera } from "./rpicam"
+import { MessageType, wait } from "@aktyn-drone/common"
 
 export async function startStreamServer() {
   const streamUrl = process.env.CAMERA_STREAM_URL ?? "tcp://127.0.0.1:8888"
@@ -11,15 +12,14 @@ export async function startStreamServer() {
   const width = 480 //1920; 480
   const height = 360 //1080; 360
 
-  const libcameraProcess = startCamera(streamUrl, width, height)
-  libcameraProcess.stdin?.on("data", (data) => {
-    logger.log("libcameraProcess.stdin.on data", data)
-  })
+  logger.log("Starting camera stream")
+  const libcameraProcess = await startCamera(streamUrl, width, height)
+  logger.log("Camera stream started")
+  await wait(1_000)
 
-  await new Promise((resolve) => setTimeout(resolve, 5_000))
-
+  logger.log("Starting stream server")
   new Stream({
-    name: "TCP/H264",
+    name: "TCP/MJPEG",
     streamUrl,
     wsPort,
     width,
@@ -31,7 +31,6 @@ export async function startStreamServer() {
       "-probesize": "48M",
     },
   })
-
   logger.log(
     `Stream server started with url: ${streamUrl} and ws port: ${wsPort}`,
   )
@@ -83,10 +82,16 @@ export async function startStreamServer() {
   }
 
   socket.onmessage = (event) => {
-    console.log("WebSocket message received")
+    // console.log("WebSocket message received")
     if (Connection.hasConnections()) {
       const uint8Array = new Uint8Array(event.data as ArrayBuffer)
-      Connection.broadcastBytes(uint8Array)
+      // Connection.broadcastBytes(uint8Array)
+      Connection.broadcastChunked({
+        type: MessageType.CAMERA_DATA,
+        data: {
+          base64: uint8ArrayToBase64(uint8Array),
+        },
+      })
     }
   }
 
@@ -132,4 +137,8 @@ export async function startStreamServer() {
     //   console.error("Error killing python script process:", error)
     // }
   }
+}
+
+function uint8ArrayToBase64(uint8Array: Uint8Array) {
+  return Buffer.from(uint8Array).toString("base64")
 }

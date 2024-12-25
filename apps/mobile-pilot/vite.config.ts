@@ -1,10 +1,11 @@
-import path from "path";
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import path from "path"
+import { defineConfig } from "vite"
+import react from "@vitejs/plugin-react-swc"
+import version from "vite-plugin-package-version"
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), version()],
   define: {
     global: "window",
   },
@@ -17,4 +18,4 @@ export default defineConfig({
     },
     preserveSymlinks: true,
   },
-});
+})

@@ -13,3 +13,7 @@ export function randomString(length: number) {
 export function uuid() {
   return uuidv4()
 }
+
+export function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}

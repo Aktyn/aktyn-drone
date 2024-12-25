@@ -1,10 +1,10 @@
-import { Button } from "~/components/ui/button.tsx"
-import { Separator } from "~/components/ui/separator.tsx"
 import { useEffect, useState } from "react"
-import { Input } from "~/components/ui/input.tsx"
-import { useConnection } from "~/providers/connection-provider.tsx"
-import { LAST_CONNECTED_PEER_ID_KEY } from "~/lib/consts"
 import { FullscreenToggle } from "~/components/common/fullscreen-toggle"
+import { Button } from "~/components/ui/button.tsx"
+import { Input } from "~/components/ui/input.tsx"
+import { LAST_CONNECTED_PEER_ID_KEY } from "~/lib/consts"
+import { useConnection } from "~/providers/connection-provider.tsx"
+import { Footer } from "./footer"
 
 export function Menu() {
   const { selfPeerId, connect, peerError } = useConnection()
@@ -66,21 +66,7 @@ export function Menu() {
           </div>
         )}
       </div>
-      <footer className="self-end px-1 w-full text-xs text-muted-foreground flex items-center justify-end gap-x-2 animate-in slide-in-from-bottom">
-        <div>
-          Created by <span className="font-bold">Aktyn</span>
-        </div>
-        <Separator orientation="vertical" className="h-6" />
-        <div>
-          <a
-            className="hover:text-primary"
-            href="https://github.com/Aktyn"
-            target="_blank"
-          >
-            GitHub
-          </a>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

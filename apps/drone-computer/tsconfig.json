@@ -10,7 +10,8 @@
     "outDir": "dist",
     "types": [
       "./types/peerjs.d.ts"
-    ]
+    ],
+    "experimentalDecorators": true
   },
   "include": [
     "src/**/*.ts"

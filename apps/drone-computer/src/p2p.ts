@@ -1,13 +1,32 @@
-import type { DataConnection, Peer as PeerJS } from "../types/peerjs"
 import { MessageType, type Message } from "@aktyn-drone/common"
+import { EventEmitter } from "events"
+import type { DataConnection, Peer as PeerJS } from "../types/peerjs"
 import { logger } from "./logger"
-import { type EventEmitter } from "stream"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Peer = require("peerjs-on-node").Peer as typeof PeerJS
 
-export class Connection {
+type MessageListener = (message: Message, conn: DataConnection) => void
+
+const requiresInstance = requiresInstanceBase as unknown as (
+  target: object,
+  context: object,
+) => void
+
+export class Connection extends EventEmitter {
   private static instance: Connection | null = null
+
+  protected static getInstance(): Connection | null {
+    return this.instance
+  }
+
+  declare emit: (
+    event: "message",
+    ...args: Parameters<MessageListener>
+  ) => boolean
+  declare on: (event: "message", listener: MessageListener) => this
+  declare off: (event: "message", listener: MessageListener) => this
+
   public static init(peerId: string) {
     logger.log("Initializing connection with peer id:", peerId)
     this.instance = new Connection(peerId)
@@ -20,6 +39,8 @@ export class Connection {
   }
 
   private constructor(private readonly peerId: string) {
+    super()
+
     const peer = new Peer(peerId)
 
     const peerEventEmitter = peer as unknown as EventEmitter
@@ -93,42 +114,69 @@ export class Connection {
           [conn],
         )
         break
+      case MessageType.REQUEST_CAMERA_STREAM:
+        // noop
+        break
     }
+    this.emit("message", message, conn)
   }
 
-  public static broadcast(message: Message, connections?: DataConnection[]) {
-    ;(connections ?? this.instance?.connections ?? []).forEach((conn) => {
-      if (conn.open) {
-        handleSend(conn.send(JSON.stringify(message)))
-      }
-    })
-  }
-
-  public static broadcastBytes(
-    bytes: Uint8Array,
+  private static broadcastMessage(
+    message: Message,
     connections?: DataConnection[],
+    chunked?: boolean,
   ) {
     ;(connections ?? this.instance?.connections ?? []).forEach((conn) => {
       if (conn.open) {
-        try {
-          const base64 = uint8ArrayToBase64(bytes)
-          handleSend(conn.send(base64, true))
-        } catch (error) {
-          console.error("Error sending message", error)
-        }
+        handleSendResult(conn.send(JSON.stringify(message), chunked))
       }
     })
   }
+
+  public static broadcast(message: Message, connections?: DataConnection[]) {
+    Connection.broadcastMessage(message, connections, false)
+  }
+  public static broadcastChunked(
+    message: Message,
+    connections?: DataConnection[],
+  ) {
+    Connection.broadcastMessage(message, connections, true)
+  }
+
+  @requiresInstance
+  public static onMessage(listener: MessageListener) {
+    this.instance!.on("message", listener)
+  }
+
+  @requiresInstance
+  public static offMessage(listener: MessageListener) {
+    this.instance!.off("message", listener)
+  }
 }
 
-function handleSend(result: void | Promise<void>) {
+function requiresInstanceBase(
+  _target: object,
+  _propertyKey: "onMessage" | "offMessage",
+  descriptor: PropertyDescriptor,
+) {
+  return {
+    ...descriptor,
+    value: function (
+      this: Connection & { instance: typeof Connection },
+      listener: MessageListener,
+    ) {
+      if (!this.instance) {
+        throw new Error("Connection not initialized")
+      }
+      return descriptor.value.apply(this, [listener])
+    },
+  }
+}
+
+function handleSendResult(result: void | Promise<void>) {
   if (result instanceof Promise) {
     result.catch((error) => {
       console.error("Error sending message", error)
     })
   }
-}
-
-function uint8ArrayToBase64(uint8Array: Uint8Array) {
-  return Buffer.from(uint8Array).toString("base64")
 }
