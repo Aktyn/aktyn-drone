@@ -122,7 +122,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "-P",
     "--port",
-    default="/dev/serial0",
+    # default="/dev/serial0", # raspberry pi zero 2 and probably others
+    default="/dev/ttyAMA0", # raspberry pi 5
     required=False,
     help="Serial port to read from",
 )
@@ -303,7 +304,7 @@ async def handle_stdin(controller):
         except Exception:
             print('{"type": "ERROR", "message": "Error reading stdin"}')
             break
-        controller.send_channels()  # TODO: try without continous channels sending when drone is armed
+        controller.send_channels()  # TODO: try without continuous channels sending when drone is armed
         await asyncio.sleep(0.001)  # Small delay to prevent CPU hogging
 
 

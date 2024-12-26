@@ -28,6 +28,7 @@
       "libav",
       "libcamera",
       "MJPEG",
+      "myenv",
       "nopreview",
       "pkill",
       "probesize",
@@ -37,7 +38,8 @@
       "rpicam",
       "rtsp",
       "tseslint",
-      "UART"
+      "UART",
+      "venv"
     ],
     "betterOpenEditors.PackagePatterns": "**/drone-computer\n**/mobile-pilot\n**/common",
     "typescript.tsdk": "Drone computer/node_modules/typescript/lib"

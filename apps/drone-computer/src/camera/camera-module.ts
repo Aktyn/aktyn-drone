@@ -4,6 +4,8 @@ import { Connection } from "../p2p"
 import { startStreamServer } from "./stream-server"
 
 export function initCameraModule() {
+  logger.info("Initializing camera module")
+
   let streamCleanup: (() => void) | undefined
   let currentStreamResolution:
     | (Message & {
