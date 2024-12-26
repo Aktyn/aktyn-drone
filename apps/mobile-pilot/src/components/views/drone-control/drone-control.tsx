@@ -48,6 +48,7 @@ export function DroneControl() {
     if (!isFullScreenRef.current) {
       void toggleFullscreen()
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -88,7 +89,7 @@ export function DroneControl() {
               onClick={() => setView(View.DRONE_CONTROL)}
             >
               <Joystick />
-              <span>Drone control</span>
+              <span>Drone controls</span>
             </NavItem>
             <NavItem
               active={view === View.MAP}
@@ -130,7 +131,7 @@ export function DroneControl() {
           ) : (
             <div className="flex-grow flex flex-col items-center justify-center gap-2 pb-2 font-bold text-lg text-muted-foreground overflow-hidden">
               <div>Awaiting GPS coordinates...</div>
-              <DroneCameraPreview className="max-h-[100%] aspect-[4/3]" />
+              <DroneCameraPreview />
             </div>
           ))}
         {view === View.LOGS && <Logs logs={logs} onClear={handleClearLogs} />}

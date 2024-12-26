@@ -5,6 +5,8 @@ dist/
 .env
 .directory
 
+*.tsbuildinfo
+
 .yarn/cache
 .yarn/unplugged
 .yarn/build-state.yml

@@ -26,7 +26,7 @@ export function Map({ latitude, longitude }: MapProps) {
         />
         <Marker position={position} icon={greenIcon} />
       </MapContainer>
-      <DroneCameraPreview className="absolute top-0 right-0 rounded-none rounded-bl-lg aspect-[4/3] z-10 h-64 max-h-[50%] hover:opacity-25 transition-opacity" />
+      <DroneCameraPreview className="absolute top-0 right-0 rounded-none rounded-bl-lg z-10 h-64 max-h-[50%] hover:opacity-25 transition-opacity" />
     </div>
   )
 }

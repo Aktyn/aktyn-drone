@@ -8,12 +8,12 @@ const Peer = require("peerjs-on-node").Peer as typeof PeerJS
 
 type MessageListener = (message: Message, conn: DataConnection) => void
 
-const requiresInstance = requiresInstanceBase as unknown as (
-  target: object,
-  context: object,
-) => void
+type EventMap = {
+  message: Parameters<MessageListener>
+  disconnect: []
+}
 
-export class Connection extends EventEmitter {
+export class Connection extends EventEmitter<EventMap> {
   private static instance: Connection | null = null
 
   protected static getInstance(): Connection | null {
@@ -21,11 +21,17 @@ export class Connection extends EventEmitter {
   }
 
   declare emit: (
-    event: "message",
-    ...args: Parameters<MessageListener>
+    event: keyof EventMap,
+    ...args: EventMap[keyof EventMap]
   ) => boolean
-  declare on: (event: "message", listener: MessageListener) => this
-  declare off: (event: "message", listener: MessageListener) => this
+  declare on: <T extends keyof EventMap>(
+    event: T,
+    listener: (...args: EventMap[T]) => void,
+  ) => this
+  declare off: <T extends keyof EventMap>(
+    event: T,
+    listener: (...args: EventMap[T]) => void,
+  ) => this
 
   public static init(peerId: string) {
     logger.log("Initializing connection with peer id:", peerId)
@@ -81,6 +87,7 @@ export class Connection extends EventEmitter {
     conn.on("close", () => {
       logger.log("Connection closed")
       this.connections = this.connections.filter((c) => c !== conn)
+      this.emit("disconnect")
     })
 
     conn.on("data", (data) => {
@@ -143,32 +150,39 @@ export class Connection extends EventEmitter {
     Connection.broadcastMessage(message, connections, true)
   }
 
-  @requiresInstance
-  public static onMessage(listener: MessageListener) {
-    this.instance!.on("message", listener)
+  @requiresInstanceBase
+  public static addListener<K extends keyof EventMap>(
+    event: K,
+    listener: (...args: EventMap[K]) => void,
+  ) {
+    return this.instance!.on(event, listener)
   }
 
-  @requiresInstance
-  public static offMessage(listener: MessageListener) {
-    this.instance!.off("message", listener)
+  @requiresInstanceBase
+  public static removeListener<K extends keyof EventMap>(
+    event: K,
+    listener: (...args: EventMap[K]) => void,
+  ) {
+    return this.instance!.off(event, listener)
   }
 }
 
 function requiresInstanceBase(
   _target: object,
-  _propertyKey: "onMessage" | "offMessage",
+  _propertyKey: string | symbol,
   descriptor: PropertyDescriptor,
 ) {
   return {
     ...descriptor,
-    value: function (
+    value: function descriptorValue<K extends keyof EventMap>(
       this: Connection & { instance: typeof Connection },
-      listener: MessageListener,
+      event: K,
+      listener: (...args: EventMap[K]) => void,
     ) {
       if (!this.instance) {
         throw new Error("Connection not initialized")
       }
-      return descriptor.value.apply(this, [listener])
+      return descriptor.value.apply(this, [event, listener])
     },
   }
 }

@@ -50,7 +50,7 @@ export const Logs = memo(({ logs, onClear }: LogsProps) => {
               )}
               key={`${log.timestamp}-${index}`}
             >
-              {log.args.map(String).join(" ")}
+              {stringifyLog(log)}
             </pre>
           ),
         )}
@@ -70,3 +70,14 @@ export const Logs = memo(({ logs, onClear }: LogsProps) => {
 })
 
 Logs.displayName = "Logs"
+
+function stringifyLog(log: LogMessageData) {
+  return log.args
+    .map((value) => {
+      if (typeof value === "object") {
+        return JSON.stringify(value)
+      }
+      return String(value)
+    })
+    .join(" ")
+}

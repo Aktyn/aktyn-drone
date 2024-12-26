@@ -1,16 +1,17 @@
+import { MessageType, wait } from "@aktyn-drone/common"
 import WebSocket from "ws"
+import { uint8ArrayToBase64 } from "../lib/utils"
 import { logger } from "../logger"
 import { Connection } from "../p2p"
+import { startCamera } from "./rpicam"
 //@ts-expect-error There are no types for node-rtsp-stream
 import Stream from "node-rtsp-stream"
-import { startCamera } from "./rpicam"
-import { MessageType, wait } from "@aktyn-drone/common"
 
-export async function startStreamServer() {
+export async function startStreamServer(width: number, height: number) {
   const streamUrl = process.env.CAMERA_STREAM_URL ?? "tcp://127.0.0.1:8888"
   const wsPort = 9999
-  const width = 480 //1920; 480
-  const height = 360 //1080; 360
+  // const width = 480 //1920
+  // const height = 360 //1080
 
   logger.log("Starting camera stream")
   const libcameraProcess = await startCamera(streamUrl, width, height)
@@ -18,7 +19,7 @@ export async function startStreamServer() {
   await wait(1_000)
 
   logger.log("Starting stream server")
-  new Stream({
+  const stream = new Stream({
     name: "TCP/MJPEG",
     streamUrl,
     wsPort,
@@ -26,7 +27,7 @@ export async function startStreamServer() {
     height,
     ffmpegOptions: {
       "-stats": "",
-      "-r": 30,
+      "-r": 25,
       "-q:v": 3,
       "-probesize": "48M",
     },
@@ -88,9 +89,7 @@ export async function startStreamServer() {
       // Connection.broadcastBytes(uint8Array)
       Connection.broadcastChunked({
         type: MessageType.CAMERA_DATA,
-        data: {
-          base64: uint8ArrayToBase64(uint8Array),
-        },
+        data: { base64: uint8ArrayToBase64(uint8Array) },
       })
     }
   }
@@ -126,6 +125,18 @@ export async function startStreamServer() {
   // cleanup
   return () => {
     try {
+      socket.close()
+    } catch (error) {
+      logger.error("Error closing WebSocket:", error)
+    }
+
+    try {
+      stream.stop()
+    } catch (error) {
+      logger.error("Error stopping stream:", error)
+    }
+
+    try {
       libcameraProcess.kill()
     } catch (error) {
       logger.error("Error killing libcamera process:", error)
@@ -137,8 +148,4 @@ export async function startStreamServer() {
     //   console.error("Error killing python script process:", error)
     // }
   }
-}
-
-function uint8ArrayToBase64(uint8Array: Uint8Array) {
-  return Buffer.from(uint8Array).toString("base64")
 }

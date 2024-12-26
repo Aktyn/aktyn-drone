@@ -5,6 +5,7 @@ export enum MessageType {
   PONG = "pong",
   LOG = "log",
   REQUEST_CAMERA_STREAM = "request_camera_stream",
+  CLOSE_CAMERA_STREAM = "close_camera_stream",
   CAMERA_DATA = "camera_data",
 }
 
@@ -39,6 +40,12 @@ export type Message =
       {
         width: number
         height: number
+      }
+    >
+  | MessageBase<
+      MessageType.CLOSE_CAMERA_STREAM,
+      {
+        streamId: string
       }
     >
   | MessageBase<

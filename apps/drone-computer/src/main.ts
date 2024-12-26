@@ -1,29 +1,18 @@
-import { MessageType, randomString } from "@aktyn-drone/common"
+import { randomString } from "@aktyn-drone/common"
 import { config } from "dotenv"
 import { logger } from "./logger"
 import { Connection } from "./p2p"
+import { initCameraModule } from "./camera/camera-module"
 
 config()
 
 const peerId = process.env.PEER_ID ?? randomString(24)
 Connection.init(peerId)
 
-const cleanups: (() => void)[] = []
-
-// startStreamServer()
-//   .then((cleanup) => cleanups.push(cleanup))
-//   .catch(console.error)
-
-Connection.onMessage((message) => {
-  switch (message.type) {
-    case MessageType.REQUEST_CAMERA_STREAM:
-      console.log("Camera stream requested", message.data) //TODO: implement
-      break
-  }
-})
+const cameraModule = initCameraModule()
 
 process.on("SIGINT", () => {
   logger.info("Shutting down...")
-  cleanups.forEach((cleanup) => cleanup())
+  cameraModule.cleanup()
   process.exit()
 })

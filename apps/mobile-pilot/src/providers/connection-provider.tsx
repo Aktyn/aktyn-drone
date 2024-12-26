@@ -64,6 +64,17 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
         setConnections((prev) => [...prev, conn])
         localStorage.setItem(LAST_CONNECTED_PEER_ID_KEY, conn.peer)
 
+        broadcast(
+          {
+            type: MessageType.REQUEST_CAMERA_STREAM,
+            data: {
+              width: 640, //480
+              height: 480, //360
+            },
+          },
+          [conn],
+        )
+
         pingInterval = setInterval(() => {
           setUnstableConnection(!!awaitingId)
 
@@ -76,7 +87,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
             },
             [conn],
           )
-        }, 1_000)
+        }, 5_000)
       })
 
       conn.on("close", () => {

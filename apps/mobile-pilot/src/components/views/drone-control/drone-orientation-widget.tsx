@@ -9,7 +9,7 @@ export function DroneOrientationWidget() {
   const canvasContainerRef = useRef<HTMLDivElement>(null)
 
   const [mesh, setMesh] = useState<THREE.Mesh | null>(null)
-  const [size, setSize] = useState(2)
+  const [size, setSize] = useState(1)
 
   useEffect(() => {
     if (!mesh) {
@@ -104,7 +104,7 @@ export function DroneOrientationWidget() {
       <div
         ref={canvasContainerRef}
         className={cn(
-          "aspect-square w-auto max-h-[50dvh] overflow-hidden",
+          "aspect-square w-auto max-h-[50dvh] mx-auto overflow-hidden",
           size === 1 && "h-32",
           size === 2 && "h-64",
           size === 3 && "h-96",

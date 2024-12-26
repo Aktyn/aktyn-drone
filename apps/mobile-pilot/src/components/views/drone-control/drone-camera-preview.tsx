@@ -1,5 +1,12 @@
 import { MessageType } from "@aktyn-drone/common"
-import { memo, type PropsWithChildren, useEffect, useRef } from "react"
+import {
+  memo,
+  type PropsWithChildren,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
+import { useInterval } from "~/hooks/useInterval"
 import { PeerDataSource } from "~/lib/p2p-data-source"
 import { base64ToUint8Array, cn } from "~/lib/utils"
 import { useConnectionMessageHandler } from "~/providers/connection-provider"
@@ -29,9 +36,25 @@ type DroneCameraPreviewProps = PropsWithChildren<{ className?: string }>
 export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
   ({ children, className }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const imageRef = useRef<HTMLImageElement>(null)
     const p2pPlayerRef = useRef<InstanceType<
       typeof window.JSMpeg.Player
     > | null>(null)
+
+    const [snapshot, setSnapshot] = useState<string | null>(null)
+    const [loading, setLoading] = useState(false)
+
+    useInterval(() => {
+      const canvas = canvasRef.current
+      const image = imageRef.current
+      if (!canvas || !image) return
+
+      getCanvasSnapshot(canvas)
+        .then((url) => {
+          image.src = url
+        })
+        .catch(console.error)
+    }, 10_000)
 
     useConnectionMessageHandler((message) => {
       switch (message.type) {
@@ -50,6 +73,8 @@ export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
       const canvas = canvasRef.current
       if (!canvas) return
 
+      let readyTimeout: NodeJS.Timeout | null = null
+
       const p2pPlayer = new window.JSMpeg.Player(null, {
         source: PeerDataSource,
         canvas,
@@ -57,12 +82,26 @@ export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
         audio: false,
         loop: false,
         stream: true,
+        preserveDrawingBuffer: true,
+        onPlay: () => {
+          readyTimeout = setTimeout(() => {
+            setLoading(false)
+            readyTimeout = null
+            if (snapshot) {
+              URL.revokeObjectURL(snapshot)
+            }
+          }, 200)
+        },
       })
       p2pPlayerRef.current = p2pPlayer
 
       p2pPlayer.source.onOpen()
 
       return () => {
+        if (readyTimeout) {
+          clearTimeout(readyTimeout)
+        }
+
         try {
           p2pPlayer.source.destroy()
           p2pPlayer.destroy()
@@ -71,16 +110,27 @@ export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
         }
         p2pPlayerRef.current = null
       }
-    }, [])
+    }, [snapshot])
 
     return (
       <div
         className={cn(
-          "rounded-lg overflow-hidden bg-background border relative",
+          "rounded-lg overflow-hidden bg-background shadow-lg border aspect-[4/3] relative",
           className,
         )}
       >
-        <canvas ref={canvasRef} width={480} height={360}></canvas>
+        <canvas ref={canvasRef} className="size-full bg-background"></canvas>
+        <img
+          ref={imageRef}
+          onLoad={(event) => {
+            setLoading(true)
+            setSnapshot(event.currentTarget.src)
+          }}
+          className={cn(
+            "absolute inset-0 size-full",
+            loading ? "opacity-100" : "opacity-0",
+          )}
+        />
         {children}
       </div>
     )
@@ -88,3 +138,15 @@ export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
 )
 
 DroneCameraPreview.displayName = "DroneCameraPreview"
+
+function getCanvasSnapshot(canvas: HTMLCanvasElement) {
+  return new Promise<string>((resolve) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        return resolve("")
+      }
+      const url = URL.createObjectURL(blob)
+      resolve(url)
+    }, "image/jpeg")
+  })
+}

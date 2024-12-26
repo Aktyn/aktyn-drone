@@ -24,7 +24,7 @@ export function startCamera(url: string, width = 480, height = 360) {
     "--hdr",
     "off",
     "--framerate",
-    "30",
+    "25",
     "--width",
     width.toString(),
     "--height",
@@ -32,16 +32,16 @@ export function startCamera(url: string, width = 480, height = 360) {
     "--codec",
     "mjpeg",
     "--quality",
-    "80",
-    // "--intra",
-    // "5",
+    "50",
+    "--intra",
+    "25",
     "--listen",
     "-o",
     url,
   ]
 
   return new Promise<ChildProcessWithoutNullStreams>((resolve, reject) => {
-    logger.log(`Spawning rpicam-vid ${args.join(" ")}`)
+    logger.log(`Spawning ${executable} ${args.join(" ")}`)
     const camProcess = spawn(executable, args, {
       stdio: "pipe",
     })
