@@ -1,3 +1,4 @@
+import type { TelemetryData, TelemetryDataFull } from "./telemetry-data"
 import type { LogFunctions } from "./utils/types"
 
 export enum MessageType {
@@ -7,6 +8,9 @@ export enum MessageType {
   REQUEST_CAMERA_STREAM = "request_camera_stream",
   CLOSE_CAMERA_STREAM = "close_camera_stream",
   CAMERA_DATA = "camera_data",
+  TELEMETRY_UPDATE = "telemetry_update",
+  REQUEST_TELEMETRY = "request_telemetry",
+  TELEMETRY_FULL = "telemetry_full",
 }
 
 type MessageBase<Type extends MessageType, Data extends object> = {
@@ -54,3 +58,7 @@ export type Message =
         base64: string
       }
     >
+  | MessageBase<MessageType.TELEMETRY_UPDATE, TelemetryData>
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | MessageBase<MessageType.REQUEST_TELEMETRY, {}>
+  | MessageBase<MessageType.TELEMETRY_FULL, TelemetryDataFull>

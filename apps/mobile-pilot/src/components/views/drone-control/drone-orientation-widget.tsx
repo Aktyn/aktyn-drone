@@ -5,7 +5,17 @@ import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js"
 import { Button } from "~/components/ui/button"
 import { cn } from "~/lib/utils"
 
-export function DroneOrientationWidget() {
+export type DroneOrientationWidgetProps = {
+  pitch: number
+  roll: number
+  yaw: number
+}
+
+export function DroneOrientationWidget({
+  pitch,
+  roll,
+  yaw,
+}: DroneOrientationWidgetProps) {
   const canvasContainerRef = useRef<HTMLDivElement>(null)
 
   const [mesh, setMesh] = useState<THREE.Mesh | null>(null)
@@ -16,17 +26,8 @@ export function DroneOrientationWidget() {
       return
     }
 
-    //TODO: adjust mesh orientation based on messages from drone-computer
-    // mesh.rotation.set(0, 0, 0)
-
-    const interval = setInterval(() => {
-      mesh.rotation.y += 1 / 60
-      mesh.rotation.x += 0.874 / 60
-      mesh.rotation.z += 1.152 / 60
-    }, 1000 / 60)
-
-    return () => clearInterval(interval)
-  }, [mesh])
+    mesh.rotation.set(pitch, roll, yaw)
+  }, [mesh, pitch, roll, yaw])
 
   useEffect(() => {
     if (!canvasContainerRef.current) {

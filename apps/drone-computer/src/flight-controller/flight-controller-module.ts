@@ -1,35 +1,15 @@
+import { type Message, MessageType } from "@aktyn-drone/common"
 import { spawn } from "child_process"
 import path from "path"
+import type { DataConnection } from "../../types/peerjs"
 import { logger } from "../logger"
+import { Connection } from "../p2p"
+import { Telemetry } from "./telemetry"
 
 export function initFlightControllerModule() {
   logger.info("Initializing flight controller module")
 
-  // const pythonScriptProcess = initFlightController(
-  //   /**
-  //    * @param {{type: 'battery', value: number} | {type: 'attitude', value: {pitch: number, roll: number, yaw: number}}} message
-  //    */
-  //   (message) => {
-  //     if (message.type === "battery") {
-  //       if (message.value === lastBatteryPercentage) {
-  //         return;
-  //       }
-  //       lastBatteryPercentage = message.value;
-  //       console.log("Battery percentage:", message.value);
-  //     }
-
-  //     if (message && conn && conn.open) {
-  //       conn.send(JSON.stringify(message));
-  //     }
-  //   }
-  // );
-
-  const handleTelemetry = (message: ReturnType<typeof parseTelemetryData>) => {
-    // if (message.type === MessageType.TELEMETRY) {
-    //   Connection.send(message)
-    // }
-    logger.log("Telemetry:", message)
-  }
+  const telemetry = new Telemetry()
 
   const pythonScriptProcess = spawn(
     path.join(__dirname, "..", "..", "scripts", "main.py"),
@@ -49,10 +29,8 @@ export function initFlightControllerModule() {
         logger.warn("Invalid JSON string:", stringValue)
         return
       }
-      const telemetry = parseTelemetryData(JSON.parse(stringValue))
-      if (telemetry) {
-        handleTelemetry(telemetry)
-      }
+
+      telemetry.update(JSON.parse(stringValue))
     } catch (error) {
       logger.error("Error parsing Python script output:", error)
       logger.warn("Raw output:", data.toString())
@@ -73,58 +51,25 @@ export function initFlightControllerModule() {
     // }, 5000);
   })
 
+  const handleMessage = (message: Message, conn: DataConnection) => {
+    switch (message.type) {
+      case MessageType.REQUEST_TELEMETRY:
+        telemetry.sendFullTelemetry(conn)
+        break
+    }
+  }
+
+  Connection.addListener("message", handleMessage)
+
   return {
     cleanup: () => {
-      // Connection.removeListener("message", handleMessage)
-      // Connection.removeListener("disconnect", handleDisconnect)
-      // cleanupStream()
-    },
-  }
-}
+      Connection.removeListener("message", handleMessage)
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function parseTelemetryData(data: Record<string, any>) {
-  switch (data.type) {
-    default:
-      logger.warn("Unhandled message:", JSON.stringify(data))
-      break
-    case "ERROR":
-      logger.error("Python script error:", data.message)
-      break
-    case "INFO":
-      logger.info("Python script info:", data.message)
-      break
-    case "ATTITUDE":
-      return {
-        type: "attitude",
-        value: {
-          pitch: data.pitch,
-          roll: data.roll,
-          yaw: data.yaw,
-        },
+      try {
+        pythonScriptProcess.kill()
+      } catch (error) {
+        logger.error("Error killing python script process:", error)
       }
-    case "BATTERY":
-      return {
-        type: "battery",
-        value: data.percentage / 100,
-      }
-    case "GPS":
-      return {
-        type: "gps",
-        value: {
-          latitude: data.latitude,
-          longitude: data.longitude,
-          groundSpeed: data.groundSpeed, //cm/s
-          heading: data.heading, //degrees
-          altitude: data.altitude, //meters
-          satellites: data.satellites,
-        },
-      }
-    // case "BARO_ALTITUDE":
-    //   return {
-    //     type: "altitude",
-    //     value: message.altitude,
-    //   };
-    // TODO:  handle other cases
+    },
   }
 }

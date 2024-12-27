@@ -128,6 +128,8 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
             break
           case MessageType.LOG:
           case MessageType.CAMERA_DATA:
+          case MessageType.TELEMETRY_UPDATE:
+          case MessageType.TELEMETRY_FULL:
             // noop
             break
         }

@@ -36,9 +36,11 @@
       "quadcopter",
       "Radosław",
       "rpicam",
+      "rssi",
       "rtsp",
       "tseslint",
       "UART",
+      "vario",
       "venv"
     ],
     "betterOpenEditors.PackagePatterns": "**/drone-computer\n**/mobile-pilot\n**/common",

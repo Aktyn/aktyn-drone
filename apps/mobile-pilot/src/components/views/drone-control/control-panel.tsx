@@ -6,9 +6,14 @@ import { Separator } from "~/components/ui/separator"
 import { Slider } from "~/components/ui/slider"
 import { cn } from "~/lib/utils"
 import { DroneCameraPreview } from "./drone-camera-preview"
-import { DroneOrientationWidget } from "./drone-orientation-widget"
+import {
+  DroneOrientationWidget,
+  type DroneOrientationWidgetProps,
+} from "./drone-orientation-widget"
 
-export function ControlPanel() {
+type ControlPanelProps = DroneOrientationWidgetProps
+
+export function ControlPanel(droneOrientationWidgetProps: ControlPanelProps) {
   const [throttle, setThrottle] = useState(37)
   const [maximizeCameraPreview, setMaximizeCameraPreview] = useState(false)
 
@@ -85,7 +90,7 @@ export function ControlPanel() {
       </div>
       <div className="grid grid-cols-[1fr_auto_1fr]">
         <span />
-        <DroneOrientationWidget />
+        <DroneOrientationWidget {...droneOrientationWidgetProps} />
         <span />
       </div>
     </div>

@@ -83,10 +83,8 @@ export async function startStreamServer(width: number, height: number) {
   }
 
   socket.onmessage = (event) => {
-    // console.log("WebSocket message received")
     if (Connection.hasConnections()) {
       const uint8Array = new Uint8Array(event.data as ArrayBuffer)
-      // Connection.broadcastBytes(uint8Array)
       Connection.broadcastChunked({
         type: MessageType.CAMERA_DATA,
         data: { base64: uint8ArrayToBase64(uint8Array) },
@@ -101,26 +99,6 @@ export async function startStreamServer(width: number, height: number) {
   socket.onclose = () => {
     logger.info("WebSocket closed")
   }
-
-  // let lastBatteryPercentage = 0
-  // const pythonScriptProcess = initFlightController(
-  //   /**
-  //    * @param {{type: 'battery', value: number} | {type: 'attitude', value: {pitch: number, roll: number, yaw: number}}} message
-  //    */
-  //   (message) => {
-  //     if (message.type === "battery") {
-  //       if (message.value === lastBatteryPercentage) {
-  //         return
-  //       }
-  //       lastBatteryPercentage = message.value
-  //       console.log("Battery percentage:", message.value)
-  //     }
-
-  //     if (message && conn && conn.open) {
-  //       conn.send(JSON.stringify(message))
-  //     }
-  //   },
-  // )
 
   // cleanup
   return () => {
@@ -141,11 +119,5 @@ export async function startStreamServer(width: number, height: number) {
     } catch (error) {
       logger.error("Error killing libcamera process:", error)
     }
-
-    // try {
-    //   pythonScriptProcess.kill()
-    // } catch (error) {
-    //   console.error("Error killing python script process:", error)
-    // }
   }
 }

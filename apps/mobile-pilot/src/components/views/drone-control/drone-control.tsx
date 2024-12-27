@@ -1,10 +1,11 @@
-import { MessageType } from "@aktyn-drone/common"
+import { MessageType, type TelemetryDataFull } from "@aktyn-drone/common"
 import { Joystick, Logs as LogsIcon, MapIcon, Unplug } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { FullscreenToggle } from "~/components/common/fullscreen-toggle"
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
 import { Separator } from "~/components/ui/separator"
 import { useFullscreen } from "~/hooks/useFullscreen"
+import { useStateToRef } from "~/hooks/useStateToRef"
 import { cn } from "~/lib/utils"
 import {
   useConnection,
@@ -12,11 +13,10 @@ import {
 } from "~/providers/connection-provider"
 import { Button, type ButtonProps } from "../../ui/button"
 import { ControlPanel } from "./control-panel"
-import { type LogMessageData, Logs } from "./logs"
-import { Stats } from "./stats"
-import { Map } from "./map"
-import { useStateToRef } from "~/hooks/useStateToRef"
 import { DroneCameraPreview } from "./drone-camera-preview"
+import { type LogMessageData, Logs } from "./logs"
+import { Map } from "./map"
+import { Stats } from "./stats"
 
 const MINUTE = 60 * 1000
 
@@ -29,19 +29,23 @@ enum View {
 export function DroneControl() {
   const lastLogTimestampPin = useRef(0)
 
-  const { isConnected, disconnect } = useConnection()
+  const { isConnected, disconnect, send } = useConnection()
   const { isFullscreen, toggleFullscreen } = useFullscreen()
 
   const [logs, setLogs] = useState<Array<LogMessageData | string>>([])
   const [view, setView] = useState<View>(View.DRONE_CONTROL)
-  const [coordinates] = useState<{
-    latitude: number
-    longitude: number
-  } | null>(null)
-  // {
-  // latitude: 51.5074,
-  // longitude: -0.1278,
-  // }
+  const [telemetry, setTelemetry] = useState<TelemetryDataFull>({
+    pitch: -Infinity,
+    roll: -Infinity,
+    yaw: -Infinity,
+    percentage: -Infinity,
+    latitude: -Infinity, //51.776936
+    longitude: -Infinity, //19.427419
+    groundSpeed: -Infinity,
+    heading: -Infinity,
+    altitude: -Infinity,
+    satellites: -Infinity,
+  })
 
   const isFullScreenRef = useStateToRef(isFullscreen)
   useEffect(() => {
@@ -49,6 +53,14 @@ export function DroneControl() {
       void toggleFullscreen()
     }
 
+    const timeout = setTimeout(() => {
+      send({
+        type: MessageType.REQUEST_TELEMETRY,
+        data: {},
+      })
+    }, 1_000)
+
+    return () => clearTimeout(timeout)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -71,6 +83,19 @@ export function DroneControl() {
           setLogs((prev) => [...prev, message.data])
         }
         break
+      case MessageType.TELEMETRY_UPDATE:
+        {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { type, ...dataWithoutType } = message.data
+          setTelemetry((prev) => ({
+            ...prev,
+            ...dataWithoutType,
+          }))
+        }
+        break
+      case MessageType.TELEMETRY_FULL:
+        setTelemetry(message.data)
+        break
     }
   })
 
@@ -80,8 +105,11 @@ export function DroneControl() {
 
   return (
     <div className="flex-grow flex flex-col w-full max-h-dvh overflow-hidden">
-      <div className="flex flex-wrap-reverse gap-1 items-center justify-between py-2 animate-in slide-in-from-top">
-        <Stats className="px-2" />
+      <div className="flex flex-wrap-reverse gap-y-1 items-center justify-between py-2 animate-in slide-in-from-top">
+        <ScrollArea>
+          <Stats className="px-2" telemetry={telemetry} />
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
         <ScrollArea className="ml-auto">
           <nav className="flex items-center gap-x-2 px-2">
             <NavItem
@@ -121,12 +149,19 @@ export function DroneControl() {
         </ScrollArea>
       </div>
       <div className="flex-grow flex flex-col overflow-hidden">
-        {view === View.DRONE_CONTROL && <ControlPanel />}
+        {view === View.DRONE_CONTROL && (
+          <ControlPanel
+            pitch={telemetry.pitch}
+            roll={telemetry.roll}
+            yaw={telemetry.yaw}
+          />
+        )}
         {view === View.MAP &&
-          (coordinates ? (
+          (telemetry.latitude !== -Infinity &&
+          telemetry.longitude !== -Infinity ? (
             <Map
-              latitude={coordinates.latitude}
-              longitude={coordinates.longitude}
+              latitude={telemetry.latitude}
+              longitude={telemetry.longitude}
             />
           ) : (
             <div className="flex-grow flex flex-col items-center justify-center gap-2 pb-2 font-bold text-lg text-muted-foreground overflow-hidden">

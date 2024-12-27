@@ -122,6 +122,7 @@ export class Connection extends EventEmitter<EventMap> {
         )
         break
       case MessageType.REQUEST_CAMERA_STREAM:
+      case MessageType.REQUEST_TELEMETRY:
         // noop
         break
     }

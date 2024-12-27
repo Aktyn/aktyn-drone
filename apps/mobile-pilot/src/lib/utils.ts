@@ -18,3 +18,11 @@ export function base64ToUint8Array(base64: string) {
     return null
   }
 }
+
+export function cmPerSecondToKmPerHour(cmPerSecond: number) {
+  return cmPerSecond * 0.036
+}
+
+export function radiansToDegrees(radians: number) {
+  return radians * (180 / Math.PI)
+}
