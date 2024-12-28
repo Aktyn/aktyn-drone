@@ -1,5 +1,5 @@
 import { Maximize2, Minimize2, Minus, Plus } from "lucide-react"
-import { memo, useEffect, useState } from "react"
+import { memo, useCallback, useEffect, useState } from "react"
 import { Button } from "~/components/ui/button"
 import { Label } from "~/components/ui/label"
 import { Separator } from "~/components/ui/separator"
@@ -11,6 +11,8 @@ import {
   type DroneOrientationWidgetProps,
 } from "./drone-orientation-widget"
 import { Joystick } from "./joystick"
+import { useConnection } from "~/providers/connection-provider"
+import { MessageType } from "@aktyn-drone/common"
 
 type ControlPanelProps = DroneOrientationWidgetProps & ControlPanelTopProps
 
@@ -33,7 +35,28 @@ type ControlPanelTopProps = {
 
 const ControlPanelTop = memo<ControlPanelTopProps>(
   ({ onPreviewMaximizedChange }) => {
+    const { send } = useConnection()
+
     const [maximizeCameraPreview, setMaximizeCameraPreview] = useState(false)
+    const [eulerAngles, setEulerAngles] = useState({
+      yaw: 0,
+      pitch: 0,
+      roll: 0,
+    })
+
+    const updateEulerAngles = useCallback(
+      (data: Partial<typeof eulerAngles>) => {
+        setEulerAngles((prev) => {
+          const updatedAngles = { ...prev, ...data }
+          send({
+            type: MessageType.SEND_EULER_ANGLES,
+            data: updatedAngles,
+          })
+          return updatedAngles
+        })
+      },
+      [send],
+    )
 
     useEffect(() => {
       onPreviewMaximizedChange?.(maximizeCameraPreview)
@@ -45,9 +68,7 @@ const ControlPanelTop = memo<ControlPanelTopProps>(
           <Joystick
             className="mt-auto pointer-events-auto"
             disableVertical
-            onChange={(yaw) => {
-              console.log("yaw:", yaw)
-            }}
+            onChange={(yaw) => updateEulerAngles({ yaw })}
           />
         </div>
         <div className="flex items-center justify-center mx-auto max-w-full overflow-hidden">
@@ -85,9 +106,7 @@ const ControlPanelTop = memo<ControlPanelTopProps>(
           <ThrottleSlider />
           <Joystick
             className="mt-auto pointer-events-auto"
-            onChange={(roll, pitch) => {
-              console.log("roll:", roll, "pitch:", pitch)
-            }}
+            onChange={(roll, pitch) => updateEulerAngles({ roll, pitch })}
           />
         </div>
       </>
@@ -96,7 +115,20 @@ const ControlPanelTop = memo<ControlPanelTopProps>(
 )
 
 function ThrottleSlider() {
-  const [throttle, setThrottle] = useState(37)
+  const { send } = useConnection()
+
+  const [throttle, setThrottle] = useState(0)
+
+  const handleChange = useCallback(
+    (value: number) => {
+      setThrottle(value)
+      send({
+        type: MessageType.SET_THROTTLE,
+        data: { throttle: value },
+      })
+    },
+    [send],
+  )
 
   return (
     <div className="flex flex-col items-start gap-y-2 pointer-events-auto mt-auto">
@@ -110,7 +142,7 @@ function ThrottleSlider() {
       </Label>
       <Slider
         value={[throttle]}
-        onValueChange={([value]) => setThrottle(value)}
+        onValueChange={([value]) => handleChange(value)}
         min={0}
         max={100}
         step={1}
@@ -120,7 +152,7 @@ function ThrottleSlider() {
           variant="ghost"
           size="icon"
           disabled={throttle <= 0}
-          onClick={() => setThrottle(throttle - 2)}
+          onClick={() => handleChange(throttle - 2)}
         >
           <Minus />
         </Button>
@@ -129,7 +161,7 @@ function ThrottleSlider() {
           variant="ghost"
           size="icon"
           disabled={throttle >= 100}
-          onClick={() => setThrottle(throttle + 2)}
+          onClick={() => handleChange(throttle + 2)}
         >
           <Plus />
         </Button>

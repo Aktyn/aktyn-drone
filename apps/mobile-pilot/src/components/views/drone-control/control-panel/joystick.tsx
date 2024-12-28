@@ -43,6 +43,12 @@ export const Joystick = memo<JoystickProps>(
 
       observer.observe(container)
 
+      const update = (x: number, y: number) => {
+        setX(x)
+        setY(y)
+        onChange?.(x, y)
+      }
+
       let grabPosition: { x: number; y: number; pointerId: number } | null =
         null
 
@@ -58,8 +64,7 @@ export const Joystick = memo<JoystickProps>(
       const onRelease = () => {
         setGrabbed(false)
         grabPosition = null
-        setX(0)
-        setY(0)
+        update(0, 0)
       }
 
       const onMove = (event: PointerEvent) => {
@@ -70,10 +75,7 @@ export const Joystick = memo<JoystickProps>(
         const deltaX = event.clientX - grabPosition.x
         const deltaY = disableVertical ? 0 : event.clientY - grabPosition.y
 
-        setX(deltaX)
-        setY(deltaY)
-
-        onChange?.(
+        update(
           clamp((deltaX / containerSizeRef.current.width) * 2, -1, 1),
           -clamp((deltaY / containerSizeRef.current.height) * 2, -1, 1),
         )
@@ -116,7 +118,7 @@ export const Joystick = memo<JoystickProps>(
               grabbed && "bg-primary cursor-grabbing",
             )}
             style={{
-              transform: `translate(${clamp(x, -containerSize.width / 2, containerSize.width / 2)}px, ${clamp(y, -containerSize.height / 2, containerSize.height / 2)}px)`,
+              transform: `translate(${(x * containerSize.width) / 2}px, ${(-y * containerSize.height) / 2}px)`,
             }}
           />
         </div>

@@ -1,4 +1,8 @@
-import { MessageType, type TelemetryDataFull } from "@aktyn-drone/common"
+import {
+  type LogMessageData,
+  MessageType,
+  type TelemetryDataFull,
+} from "@aktyn-drone/common"
 import { Joystick, Logs as LogsIcon, MapIcon, Unplug } from "lucide-react"
 import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { FullscreenToggle } from "~/components/common/fullscreen-toggle"
@@ -14,7 +18,7 @@ import {
 import { Button, type ButtonProps } from "../../ui/button"
 import { ControlPanel } from "./control-panel/control-panel"
 import { DroneCameraPreview } from "./drone-camera-preview"
-import { type LogMessageData, Logs } from "./logs/logs"
+import { Logs } from "./logs/logs"
 import { Map } from "./map/map"
 import { Stats } from "./stats"
 

@@ -66,6 +66,14 @@ export function initFlightControllerModule() {
       case MessageType.REQUEST_TELEMETRY:
         telemetry.sendFullTelemetry(conn)
         break
+      case MessageType.SET_THROTTLE:
+        // TODO: implement
+        console.log("TODO: implement SET_THROTTLE", message.data.throttle)
+        break
+      case MessageType.SEND_EULER_ANGLES:
+        // TODO: implement
+        console.log("TODO: implement SEND_EULER_ANGLES", message.data)
+        break
     }
   }
 

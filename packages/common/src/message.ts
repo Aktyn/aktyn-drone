@@ -11,6 +11,10 @@ export enum MessageType {
   TELEMETRY_UPDATE = "telemetry_update",
   REQUEST_TELEMETRY = "request_telemetry",
   TELEMETRY_FULL = "telemetry_full",
+  /** Sends throttle percentage value in range [0, 100] */
+  SET_THROTTLE = "set_throttle",
+  /** Sends Yaw, Pitch and Roll values in range [-1, 1] */
+  SEND_EULER_ANGLES = "send_euler_angles",
 }
 
 type MessageBase<Type extends MessageType, Data extends object> = {
@@ -62,3 +66,8 @@ export type Message =
   // eslint-disable-next-line @typescript-eslint/ban-types
   | MessageBase<MessageType.REQUEST_TELEMETRY, {}>
   | MessageBase<MessageType.TELEMETRY_FULL, TelemetryDataFull>
+  | MessageBase<MessageType.SET_THROTTLE, { throttle: number }>
+  | MessageBase<
+      MessageType.SEND_EULER_ANGLES,
+      { yaw: number; pitch: number; roll: number }
+    >
