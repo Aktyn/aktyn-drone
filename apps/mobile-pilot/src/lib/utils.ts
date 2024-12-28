@@ -26,3 +26,7 @@ export function cmPerSecondToKmPerHour(cmPerSecond: number) {
 export function radiansToDegrees(radians: number) {
   return radians * (180 / Math.PI)
 }
+
+export function isTouchDevice() {
+  return "ontouchstart" in window || navigator.maxTouchPoints > 0
+}

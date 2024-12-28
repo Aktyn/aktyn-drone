@@ -21,16 +21,26 @@ export function initFlightControllerModule() {
 
   pythonScriptProcess.stdout.on("data", (data) => {
     try {
-      const stringValue = data.toString().trim().replace(/\n/g, "")
-      if (!stringValue) {
+      const lines = data
+        ?.toString()
+        .split("\n")
+        .map((line: string) => line.trim())
+        .filter(Boolean)
+      if (!lines || !lines.length) {
         return
       }
-      if (!stringValue.match(/^\{[\s\S]*\}$/)) {
-        logger.warn("Invalid JSON string:", stringValue)
-        return
+      for (const line of lines) {
+        if (!line.match(/^\{[\s\S]*\}$/)) {
+          logger.warn("Invalid JSON string:", line)
+          return
+        }
+        try {
+          telemetry.update(JSON.parse(line))
+        } catch (error) {
+          logger.error("Error parsing Python output line:", error)
+          logger.warn("Line:", line)
+        }
       }
-
-      telemetry.update(JSON.parse(stringValue))
     } catch (error) {
       logger.error("Error parsing Python script output:", error)
       logger.warn("Raw output:", data.toString())
