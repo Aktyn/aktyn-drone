@@ -1,26 +1,34 @@
-import { Maximize2, Minimize2, Minus, Plus } from "lucide-react"
-import { memo, useCallback, useEffect, useState } from "react"
+import { clamp, MessageType } from "@aktyn-drone/common"
+import { Maximize2, Minimize2 } from "lucide-react"
+import {
+  memo,
+  type SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import { Button } from "~/components/ui/button"
+import { Checkbox } from "~/components/ui/checkbox"
 import { Label } from "~/components/ui/label"
-import { Separator } from "~/components/ui/separator"
-import { Slider } from "~/components/ui/slider"
+import { useInterval } from "~/hooks/useInterval"
 import { cn } from "~/lib/utils"
+import { useConnection } from "~/providers/connection-provider"
 import { DroneCameraPreview } from "../drone-camera-preview"
 import {
   DroneOrientationWidget,
   type DroneOrientationWidgetProps,
 } from "./drone-orientation-widget"
 import { Joystick } from "./joystick"
-import { useConnection } from "~/providers/connection-provider"
-import { MessageType } from "@aktyn-drone/common"
+import { ThrottleSlider } from "./throttle-slider"
 
-type ControlPanelProps = DroneOrientationWidgetProps & ControlPanelTopProps
+type ControlPanelProps = DroneOrientationWidgetProps & ControlPanelMainProps
 
 export const ControlPanel = memo<ControlPanelProps>(
   ({ onPreviewMaximizedChange, ...droneOrientationWidgetProps }) => {
     return (
       <div className="flex-grow overflow-hidden size-full animate-in fade-in grid grid-cols-[1fr_2fr_1fr] grid-rows-[minmax(0,1fr)_auto] justify-between items-stretch">
-        <ControlPanelTop onPreviewMaximizedChange={onPreviewMaximizedChange} />
+        <ControlPanelMain onPreviewMaximizedChange={onPreviewMaximizedChange} />
         <DroneOrientationWidget {...droneOrientationWidgetProps} />
       </div>
     )
@@ -29,13 +37,14 @@ export const ControlPanel = memo<ControlPanelProps>(
 
 ControlPanel.displayName = "ControlPanel"
 
-type ControlPanelTopProps = {
+type ControlPanelMainProps = {
   onPreviewMaximizedChange?: (maximized: boolean) => void
 }
 
-const ControlPanelTop = memo<ControlPanelTopProps>(
+const ControlPanelMain = memo<ControlPanelMainProps>(
   ({ onPreviewMaximizedChange }) => {
     const { send } = useConnection()
+    const throttleAcceleratorRef = useRef(0)
 
     const [maximizeCameraPreview, setMaximizeCameraPreview] = useState(false)
     const [eulerAngles, setEulerAngles] = useState({
@@ -43,6 +52,8 @@ const ControlPanelTop = memo<ControlPanelTopProps>(
       pitch: 0,
       roll: 0,
     })
+    const [throttle, setThrottle] = useState(0)
+    const [throttleSafety, setThrottleSafety] = useState(true)
 
     const updateEulerAngles = useCallback(
       (data: Partial<typeof eulerAngles>) => {
@@ -58,6 +69,42 @@ const ControlPanelTop = memo<ControlPanelTopProps>(
       [send],
     )
 
+    const handleThrottleChange = useCallback(
+      (value: SetStateAction<number>) => {
+        setThrottle((prev) => {
+          const newValue = clamp(
+            typeof value === "function" ? value(prev) : value,
+            0,
+            100,
+          )
+
+          send({
+            type: MessageType.SET_THROTTLE,
+            data: { throttle: newValue },
+          })
+
+          return newValue
+        })
+      },
+      [send],
+    )
+
+    useInterval(
+      () => {
+        if (throttleSafety) {
+          return
+        }
+
+        if (throttleAcceleratorRef.current !== 0) {
+          handleThrottleChange(
+            (throttle) => throttle + throttleAcceleratorRef.current,
+          )
+        }
+      },
+      1000 / 60,
+      [throttleSafety],
+    )
+
     useEffect(() => {
       onPreviewMaximizedChange?.(maximizeCameraPreview)
     }, [maximizeCameraPreview, onPreviewMaximizedChange])
@@ -65,10 +112,25 @@ const ControlPanelTop = memo<ControlPanelTopProps>(
     return (
       <>
         <div className="h-full flex flex-col items-stretch justify-center gap-y-4 p-2 z-10 pointer-events-none overflow-hidden row-span-2">
+          <div className="flex-grow flex flex-col items-center justify-end">
+            <div className="flex items-center gap-x-2 pointer-events-auto">
+              <Checkbox
+                id="throttle-safety"
+                checked={throttleSafety}
+                onCheckedChange={(checked) => setThrottleSafety(!!checked)}
+              />
+              <Label htmlFor="throttle-safety" className="cursor-pointer">
+                Throttle safety
+              </Label>
+            </div>
+          </div>
           <Joystick
-            className="mt-auto pointer-events-auto"
-            disableVertical
-            onChange={(yaw) => updateEulerAngles({ yaw })}
+            className="pointer-events-auto"
+            disableVertical={throttleSafety}
+            onChange={(yaw, throttleAccelerator) => {
+              updateEulerAngles({ yaw })
+              throttleAcceleratorRef.current = throttleAccelerator
+            }}
           />
         </div>
         <div className="flex items-center justify-center mx-auto max-w-full overflow-hidden">
@@ -103,7 +165,10 @@ const ControlPanelTop = memo<ControlPanelTopProps>(
           </DroneCameraPreview>
         </div>
         <div className="h-full flex flex-col items-stretch justify-center gap-y-4 p-2 z-10 pointer-events-none overflow-hidden row-span-2">
-          <ThrottleSlider />
+          <ThrottleSlider
+            throttle={throttle}
+            onThrottleChange={handleThrottleChange}
+          />
           <Joystick
             className="mt-auto pointer-events-auto"
             onChange={(roll, pitch) => updateEulerAngles({ roll, pitch })}
@@ -113,59 +178,3 @@ const ControlPanelTop = memo<ControlPanelTopProps>(
     )
   },
 )
-
-function ThrottleSlider() {
-  const { send } = useConnection()
-
-  const [throttle, setThrottle] = useState(0)
-
-  const handleChange = useCallback(
-    (value: number) => {
-      setThrottle(value)
-      send({
-        type: MessageType.SET_THROTTLE,
-        data: { throttle: value },
-      })
-    },
-    [send],
-  )
-
-  return (
-    <div className="flex flex-col items-start gap-y-2 pointer-events-auto mt-auto">
-      <Label>
-        Throttle:&nbsp;
-        <strong>
-          {new Intl.NumberFormat(undefined, {
-            style: "percent",
-          }).format(throttle / 100)}
-        </strong>
-      </Label>
-      <Slider
-        value={[throttle]}
-        onValueChange={([value]) => handleChange(value)}
-        min={0}
-        max={100}
-        step={1}
-      />
-      <div className="grid grid-cols-[1fr_1px_1fr] items-stretch justify-stretch w-full *:w-auto *:rounded-none">
-        <Button
-          variant="ghost"
-          size="icon"
-          disabled={throttle <= 0}
-          onClick={() => handleChange(throttle - 2)}
-        >
-          <Minus />
-        </Button>
-        <Separator orientation="vertical" />
-        <Button
-          variant="ghost"
-          size="icon"
-          disabled={throttle >= 100}
-          onClick={() => handleChange(throttle + 2)}
-        >
-          <Plus />
-        </Button>
-      </div>
-    </div>
-  )
-}

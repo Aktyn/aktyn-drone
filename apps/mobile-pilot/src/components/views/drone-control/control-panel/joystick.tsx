@@ -62,9 +62,15 @@ export const Joystick = memo<JoystickProps>(
       }
 
       const onRelease = () => {
+        if (grabPosition) {
+          update(0, 0)
+        } else {
+          setX(0)
+          setY(0)
+        }
+
         setGrabbed(false)
         grabPosition = null
-        update(0, 0)
       }
 
       const onMove = (event: PointerEvent) => {
