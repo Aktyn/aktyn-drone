@@ -1,19 +1,23 @@
 import { Fullscreen, Minimize } from "lucide-react"
-import { Button } from "~/components/ui/button"
+import { Button, type ButtonProps } from "~/components/ui/button"
 import { cn } from "~/lib/utils"
 import { useFullscreen } from "~/hooks/useFullscreen"
 
-export function FullscreenToggle({ className }: { className?: string }) {
+type FullscreenToggleProps = ButtonProps
+
+export function FullscreenToggle(props: FullscreenToggleProps) {
   const { isFullscreen, toggleFullscreen } = useFullscreen()
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      className={cn("[&_svg]:size-6", className)}
+      {...props}
+      className={cn("[&_svg]:size-6", props.className)}
       onClick={toggleFullscreen}
     >
       {isFullscreen ? <Minimize /> : <Fullscreen />}
+      {props.children}
     </Button>
   )
 }

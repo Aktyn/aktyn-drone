@@ -284,23 +284,18 @@ async def handle_stdin(controller):
                             factor_to_stick_value(message["value"]["roll"]),
                         )
                     # TODO: send it continuously to keep values from resetting
-                    # controller.send_channels()
                 elif message["type"] == "arm":
                     print('{"type": "INFO", "message": "Arming drone"}', flush=True)
                     controller.set_channel(RCChannels.AUX1, 90.66)
-                    # controller.send_channels()
                 elif message["type"] == "disarm":
                     print('{"type": "INFO", "message": "Disarming drone"}', flush=True)
                     controller.set_channel(RCChannels.AUX1, 9.349593495934959)
-                    # controller.send_channels()
                 elif message["type"] == "angleModeOn":
                     print('{"type": "INFO", "message": "Angle mode on"}', flush=True)
                     controller.set_channel(RCChannels.AUX2, 90.66)
-                    # controller.send_channels()
                 elif message["type"] == "angleModeOff":
                     print('{"type": "INFO", "message": "Angle mode off"}', flush=True)
                     controller.set_channel(RCChannels.AUX2, 9.349593495934959)
-                    # controller.send_channels()
         except Exception:
             print('{"type": "ERROR", "message": "Error reading stdin"}')
             break

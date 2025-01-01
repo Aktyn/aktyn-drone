@@ -9,7 +9,11 @@ import {
 import { useInterval } from "~/hooks/useInterval"
 import { PeerDataSource } from "~/lib/p2p-data-source"
 import { base64ToUint8Array, cn } from "~/lib/utils"
-import { useConnectionMessageHandler } from "~/providers/connection-provider"
+import {
+  useConnection,
+  useConnectionMessageHandler,
+} from "~/providers/connection-provider"
+import { useSettings } from "~/providers/settings-provider"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 declare global {
@@ -35,6 +39,9 @@ type DroneCameraPreviewProps = PropsWithChildren<{ className?: string }>
 
 export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
   ({ children, className }) => {
+    const { send, isConnected } = useConnection()
+    const { cameraResolution } = useSettings()
+
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const imageRef = useRef<HTMLImageElement>(null)
     const p2pPlayerRef = useRef<InstanceType<
@@ -43,6 +50,24 @@ export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
 
     const [snapshot, setSnapshot] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+      if (!isConnected) {
+        return
+      }
+      console.info("Requesting camera stream with resolution", cameraResolution)
+      const timeout = setTimeout(() => {
+        send({
+          type: MessageType.REQUEST_CAMERA_STREAM,
+          data: {
+            width: cameraResolution.width,
+            height: cameraResolution.height,
+          },
+        })
+      }, 16)
+
+      return () => clearTimeout(timeout)
+    }, [send, isConnected, cameraResolution])
 
     useInterval(() => {
       const canvas = canvasRef.current
@@ -134,6 +159,9 @@ export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
         {children}
       </div>
     )
+  },
+  (prevProps, nextProps) => {
+    return prevProps.className === nextProps.className
   },
 )
 

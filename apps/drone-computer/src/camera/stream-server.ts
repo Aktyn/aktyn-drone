@@ -10,8 +10,6 @@ import Stream from "node-rtsp-stream"
 export async function startStreamServer(width: number, height: number) {
   const streamUrl = process.env.CAMERA_STREAM_URL ?? "tcp://127.0.0.1:8888"
   const wsPort = 9999
-  // const width = 480 //1920
-  // const height = 360 //1080
 
   logger.log("Starting camera stream")
   const libcameraProcess = await startCamera(streamUrl, width, height)
@@ -35,46 +33,6 @@ export async function startStreamServer(width: number, height: number) {
   logger.log(
     `Stream server started with url: ${streamUrl} and ws port: ${wsPort}`,
   )
-
-  // ------------------------------------------------------------
-  // const peerId = process.env.PEER_ID ?? randomString(24)
-  // const peer = new Peer(peerId)
-  // let conn
-
-  // peer.on("open", (/** @type {string} */ id) => {
-  //   console.log(`Peer ID opened. Id: ${id}`)
-  // })
-  // peer.on("connection", (connection) => {
-  //   conn = connection
-  //   console.log("Incoming peer connection:", conn.peer)
-
-  //   conn.on("open", () => {
-  //     console.log("Peer connection opened")
-  //   })
-
-  //   conn.on("data", (data) => {
-  //     try {
-  //       // Forward the data to the python script
-  //       const io = pythonScriptProcess.stdin
-  //       if (!io || !io.writable) {
-  //         console.error("Python script stdin is not writable")
-  //         return
-  //       }
-
-  //       // Add newline to ensure Python readline() gets complete lines
-  //       const dataString =
-  //         typeof data === "string" ? data : JSON.stringify(data)
-  //       console.log("Sending data to python script:", dataString)
-  //       io.write(dataString + "\n", (error) => {
-  //         if (error) {
-  //           console.error("Error writing to python script stdin:", error)
-  //         }
-  //       })
-  //     } catch (error) {
-  //       console.error("Error sending data to python script:", error)
-  //     }
-  //   })
-  // })
 
   const socket = new WebSocket(`ws://127.0.0.1:${wsPort}`)
   socket.binaryType = "arraybuffer"

@@ -5,7 +5,6 @@ import {
 } from "@aktyn-drone/common"
 import { Joystick, Logs as LogsIcon, MapIcon, Unplug } from "lucide-react"
 import { memo, useCallback, useEffect, useRef, useState } from "react"
-import { FullscreenToggle } from "~/components/common/fullscreen-toggle"
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area"
 import { Separator } from "~/components/ui/separator"
 import { useFullscreen } from "~/hooks/useFullscreen"
@@ -20,6 +19,7 @@ import { ControlPanel } from "./control-panel/control-panel"
 import { DroneCameraPreview } from "./drone-camera-preview"
 import { Logs } from "./logs/logs"
 import { Map } from "./map/map"
+import { SettingsMenu } from "./settings-menu"
 import { Stats } from "./stats"
 
 const MINUTE = 60 * 1000
@@ -189,7 +189,7 @@ const Navigation = memo<NavigationProps>(({ view, setView }) => {
           <Unplug />
           <span>Disconnect</span>
         </Button>
-        <FullscreenToggle className="" />
+        <SettingsMenu />
       </nav>
       <ScrollBar orientation="horizontal" />
     </ScrollArea>
