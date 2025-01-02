@@ -20,18 +20,52 @@ export function initFlightControllerModule() {
   }
   start()
 
+  const sendMessageToPython = (data: object) => {
+    try {
+      const io = pythonScriptProcess?.stdin
+      if (!io || !io.writable) {
+        logger.error("Python script stdin is not writable")
+        return
+      }
+      io.write(JSON.stringify(data) + "\n", (error) => {
+        if (error) {
+          logger.error("Error writing to python script stdin:", error)
+        }
+      })
+    } catch (error) {
+      logger.error("Error sending message to python script:", error)
+    }
+  }
+
   const handleMessage = (message: Message, conn: DataConnection) => {
     switch (message.type) {
       case MessageType.REQUEST_TELEMETRY:
         telemetry.sendFullTelemetry(conn)
         break
       case MessageType.SET_THROTTLE:
-        // TODO: implement
-        console.log("TODO: implement SET_THROTTLE", message.data.throttle)
+        sendMessageToPython({
+          type: "set-throttle",
+          value: { throttle: message.data.throttle / 100 },
+        })
         break
       case MessageType.SEND_EULER_ANGLES:
-        // TODO: implement
-        console.log("TODO: implement SEND_EULER_ANGLES", message.data)
+        sendMessageToPython({
+          type: "euler-angles",
+          value: {
+            yaw: rangeToFactor(message.data.yaw),
+            pitch: rangeToFactor(message.data.pitch),
+            roll: rangeToFactor(message.data.roll),
+          },
+        })
+        break
+      case MessageType.SET_AUX:
+        sendMessageToPython({
+          type: "set-aux",
+          value: {
+            index: message.data.auxIndex,
+            value: message.data.value / 100,
+          },
+        })
         break
     }
   }
@@ -105,27 +139,6 @@ function startPythonScript(
   return pythonProcess
 }
 
-//TODO: reuse
-//   conn.on("data", (data) => {
-//     try {
-//       // Forward the data to the python script
-//       const io = pythonScriptProcess.stdin
-//       if (!io || !io.writable) {
-//         console.error("Python script stdin is not writable")
-//         return
-//       }
-
-//       // Add newline to ensure Python readline() gets complete lines
-//       const dataString =
-//         typeof data === "string" ? data : JSON.stringify(data)
-//       console.log("Sending data to python script:", dataString)
-//       io.write(dataString + "\n", (error) => {
-//         if (error) {
-//           console.error("Error writing to python script stdin:", error)
-//         }
-//       })
-//     } catch (error) {
-//       console.error("Error sending data to python script:", error)
-//     }
-//   })
-// })
+function rangeToFactor(value: number) {
+  return (value + 1) / 2
+}

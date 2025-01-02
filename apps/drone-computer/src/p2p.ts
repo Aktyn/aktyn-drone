@@ -90,6 +90,7 @@ export class Connection extends EventEmitter<EventMap> {
       this.emit("disconnect")
     })
 
+    //TODO: implement ping-pong and initiate safety measures after connection is lost for over N seconds
     conn.on("data", (data) => {
       if (typeof data === "object" && data !== null) {
         this.handleMessage(data, conn)
@@ -125,6 +126,7 @@ export class Connection extends EventEmitter<EventMap> {
       case MessageType.REQUEST_TELEMETRY:
       case MessageType.SET_THROTTLE:
       case MessageType.SEND_EULER_ANGLES:
+      case MessageType.SET_AUX:
         // noop
         break
     }

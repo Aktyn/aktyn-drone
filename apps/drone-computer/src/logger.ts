@@ -48,7 +48,7 @@ const MINUTE = 60 * 1000
 let lastTimestampMinute = 0
 function saveToFile(data: string, timestamp: number) {
   const date = new Date()
-  const dateString = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+  const dateString = `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`
   const filePath = path.join(logsDirectory, `${dateString}.log`)
 
   const timestampMinute = Math.floor(timestamp / MINUTE)
@@ -69,4 +69,8 @@ function saveToFile(data: string, timestamp: number) {
 
 function appendLine(filePath: string, data: string) {
   fs.appendFileSync(filePath, data + "\n")
+}
+
+function padZero(value: number, length = 2) {
+  return value.toString().padStart(length, "0")
 }

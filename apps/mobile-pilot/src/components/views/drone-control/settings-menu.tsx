@@ -21,12 +21,7 @@ export const SettingsMenu = memo(() => {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="[&_svg]:size-6"
-          // onClick={toggleFullscreen}
-        >
+        <Button variant="ghost" size="icon" className="[&_svg]:size-6">
           <Settings />
         </Button>
       </PopoverTrigger>

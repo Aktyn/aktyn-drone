@@ -21,6 +21,8 @@ import {
 } from "./drone-orientation-widget"
 import { Joystick } from "./joystick"
 import { ThrottleSlider } from "./throttle-slider"
+import { AUXPanel } from "./aux-panel"
+import { Separator } from "~/components/ui/separator"
 
 type ControlPanelProps = DroneOrientationWidgetProps & ControlPanelMainProps
 
@@ -111,9 +113,11 @@ const ControlPanelMain = memo<ControlPanelMainProps>(
 
     return (
       <>
-        <div className="h-full flex flex-col items-stretch justify-center gap-y-4 p-2 z-10 pointer-events-none overflow-hidden row-span-2">
-          <div className="flex-grow flex flex-col items-center justify-end">
-            <div className="flex items-center gap-x-2 pointer-events-auto">
+        <div className="h-full flex flex-col items-stretch justify-center gap-y-2 p-2 z-10 pointer-events-none overflow-hidden row-span-2 *:pointer-events-auto">
+          <AUXPanel />
+          <Separator />
+          <div className="flex flex-col items-center justify-end">
+            <div className="flex items-center gap-x-2">
               <Checkbox
                 id="throttle-safety"
                 checked={throttleSafety}

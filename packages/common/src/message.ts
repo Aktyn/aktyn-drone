@@ -15,6 +15,7 @@ export enum MessageType {
   SET_THROTTLE = "set_throttle",
   /** Sends Yaw, Pitch and Roll values in range [-1, 1] */
   SEND_EULER_ANGLES = "send_euler_angles",
+  SET_AUX = "set_aux",
 }
 
 type MessageBase<Type extends MessageType, Data extends object> = {
@@ -71,3 +72,4 @@ export type Message =
       MessageType.SEND_EULER_ANGLES,
       { yaw: number; pitch: number; roll: number }
     >
+  | MessageBase<MessageType.SET_AUX, { auxIndex: number; value: number }>

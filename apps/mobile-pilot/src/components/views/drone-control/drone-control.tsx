@@ -110,7 +110,8 @@ export const DroneControl = memo(() => {
 
   const awaitingLocation =
     (telemetry.latitude === -Infinity && telemetry.longitude === -Infinity) ||
-    (telemetry.latitude === 0 && telemetry.longitude === 0)
+    (telemetry.latitude === 0 && telemetry.longitude === 0) ||
+    telemetry.satellites < 3
 
   return (
     <div className="flex-grow flex flex-col w-full max-h-dvh overflow-hidden">

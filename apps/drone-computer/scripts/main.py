@@ -152,7 +152,7 @@ class RCChannels(IntEnum):
     PITCH = 1  # E
     THROTTLE = 2  # T
     YAW = 3  # R
-    AUX1 = 4  # TODO: perhaps use for servo motor
+    AUX1 = 4
     AUX2 = 5
     AUX3 = 6
     AUX4 = 7
@@ -260,14 +260,16 @@ async def handle_stdin(controller):
                 if not line:
                     break
 
-                # {type: 'steering', value: {throttle: number, yaw: number, pitch: number, roll: number}}
+                #eg.: {type: 'steering', value: {yaw: number, pitch: number, roll: number}}
+
                 message = json.loads(line)
-                if message["type"] == "steering":
+                if message["type"] == "set-throttle":
                     if "throttle" in message["value"]:
                         controller.set_channel(
                             RCChannels.THROTTLE,
                             factor_to_stick_value(message["value"]["throttle"]),
                         )
+                if message["type"] == "euler-angles":
                     if "yaw" in message["value"]:
                         controller.set_channel(
                             RCChannels.YAW,
@@ -283,19 +285,13 @@ async def handle_stdin(controller):
                             RCChannels.ROLL,
                             factor_to_stick_value(message["value"]["roll"]),
                         )
-                    # TODO: send it continuously to keep values from resetting
-                elif message["type"] == "arm":
-                    print('{"type": "INFO", "message": "Arming drone"}', flush=True)
-                    controller.set_channel(RCChannels.AUX1, 90.66)
-                elif message["type"] == "disarm":
-                    print('{"type": "INFO", "message": "Disarming drone"}', flush=True)
-                    controller.set_channel(RCChannels.AUX1, 9.349593495934959)
-                elif message["type"] == "angleModeOn":
-                    print('{"type": "INFO", "message": "Angle mode on"}', flush=True)
-                    controller.set_channel(RCChannels.AUX2, 90.66)
-                elif message["type"] == "angleModeOff":
-                    print('{"type": "INFO", "message": "Angle mode off"}', flush=True)
-                    controller.set_channel(RCChannels.AUX2, 9.349593495934959)
+                    # TODO: send it continuously (threshold and euler angles) to keep values from resetting
+                elif message["type"] == "set-aux":
+                    if "index" in message["value"] and "value" in message["value"]:
+                        controller.set_channel(
+                            RCChannels.AUX1 + message["value"]["index"],
+                            factor_to_stick_value(message["value"]["value"]),
+                        )
         except Exception:
             print('{"type": "ERROR", "message": "Error reading stdin"}')
             break
