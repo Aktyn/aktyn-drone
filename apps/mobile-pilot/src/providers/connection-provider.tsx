@@ -119,6 +119,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
           case MessageType.CAMERA_DATA:
           case MessageType.TELEMETRY_UPDATE:
           case MessageType.TELEMETRY_FULL:
+          case MessageType.HOME_POINT_COORDINATES:
             // noop
             break
         }

@@ -1,6 +1,6 @@
 {
   "name": "aktyn-drone",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "packageManager": "yarn@4.5.3",
   "description": "Raspberry Pi to flight controller interface with p2p-based connectivity, web controls, and real-time camera stream preview",

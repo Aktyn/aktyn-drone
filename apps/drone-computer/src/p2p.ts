@@ -127,6 +127,7 @@ export class Connection extends EventEmitter<EventMap> {
       case MessageType.SET_THROTTLE:
       case MessageType.SEND_EULER_ANGLES:
       case MessageType.SET_AUX:
+      case MessageType.REQUEST_HOME_POINT:
         // noop
         break
     }

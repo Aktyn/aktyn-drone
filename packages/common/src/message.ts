@@ -16,6 +16,8 @@ export enum MessageType {
   /** Sends Yaw, Pitch and Roll values in range [-1, 1] */
   SEND_EULER_ANGLES = "send_euler_angles",
   SET_AUX = "set_aux",
+  REQUEST_HOME_POINT = "request_home_point",
+  HOME_POINT_COORDINATES = "home_point_coordinates",
 }
 
 type MessageBase<Type extends MessageType, Data extends object> = {
@@ -73,3 +75,9 @@ export type Message =
       { yaw: number; pitch: number; roll: number }
     >
   | MessageBase<MessageType.SET_AUX, { auxIndex: number; value: number }>
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | MessageBase<MessageType.REQUEST_HOME_POINT, {}>
+  | MessageBase<
+      MessageType.HOME_POINT_COORDINATES,
+      { latitude: number; longitude: number }
+    >

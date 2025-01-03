@@ -25,6 +25,10 @@ export class Telemetry {
     altitude: { value: -Infinity, tolerance: 0.1 },
     satellites: { value: -Infinity, tolerance: 1 },
   } as const satisfies TelemetryComparatorState
+  private homePoint: {
+    latitude: number
+    longitude: number
+  } | null = null
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   update(data: Record<string, any>) {
@@ -101,7 +105,7 @@ export class Telemetry {
         type: MessageType.TELEMETRY_FULL,
         data: Object.entries(this.comparatorState).reduce(
           (acc, [key, value]) => {
-            acc[key as keyof typeof acc] = value.value as never
+            acc[key as keyof typeof acc] = value.value
             return acc
           },
           {} as TelemetryDataFull,
@@ -128,7 +132,6 @@ export class Telemetry {
   private handleTelemetryChange(data: TelemetryData) {
     this.updateState(data)
 
-    // logger.log("Telemetry:", data) //It causes a lot of logs
     Connection.broadcast({
       type: MessageType.TELEMETRY_UPDATE,
       data,
@@ -150,5 +153,19 @@ export class Telemetry {
         break
       }
     }
+  }
+
+  setHomePoint() {
+    logger.info(
+      `Setting home point at ${this.comparatorState.latitude.value} ${this.comparatorState.longitude.value}`,
+    )
+    this.homePoint = {
+      latitude: this.comparatorState.latitude.value,
+      longitude: this.comparatorState.longitude.value,
+    }
+  }
+
+  getHomePoint() {
+    return this.homePoint
   }
 }

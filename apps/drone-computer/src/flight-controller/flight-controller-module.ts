@@ -59,6 +59,9 @@ export function initFlightControllerModule() {
         })
         break
       case MessageType.SET_AUX:
+        if (message.data.auxIndex === 0 && message.data.value === 90.66) {
+          telemetry.setHomePoint()
+        }
         sendMessageToPython({
           type: "set-aux",
           value: {
@@ -66,6 +69,17 @@ export function initFlightControllerModule() {
             value: message.data.value / 100,
           },
         })
+        break
+      case MessageType.REQUEST_HOME_POINT:
+        {
+          const homePoint = telemetry.getHomePoint()
+          if (homePoint) {
+            Connection.broadcast({
+              type: MessageType.HOME_POINT_COORDINATES,
+              data: homePoint,
+            })
+          }
+        }
         break
     }
   }
