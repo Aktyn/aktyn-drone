@@ -17,7 +17,7 @@ import {
 import { Button, type ButtonProps } from "../../ui/button"
 import { ControlPanel } from "./control-panel/control-panel"
 import { DroneCameraPreview } from "./drone-camera-preview"
-import { Logs } from "./logs/logs"
+import { LogsPanel } from "./logs-panel/logs-panel"
 import { Map } from "./map/map"
 import { SettingsMenu } from "./settings-menu"
 import { Stats } from "./stats"
@@ -146,7 +146,9 @@ export const DroneControl = memo(() => {
               <DroneCameraPreview />
             </div>
           ))}
-        {view === View.LOGS && <Logs logs={logs} onClear={handleClearLogs} />}
+        {view === View.LOGS && (
+          <LogsPanel logs={logs} onClear={handleClearLogs} />
+        )}
       </div>
     </div>
   )
