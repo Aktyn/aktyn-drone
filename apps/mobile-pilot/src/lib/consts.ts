@@ -1,4 +1,5 @@
 export const LAST_CONNECTED_PEER_ID_KEY = "lastConnectedPeerId"
+export const TURN_SERVER_KEY = "turnServer"
 
 export const CAMERA_RESOLUTION_KEY = "cameraResolution"
 export const CAMERA_RESOLUTIONS = [
