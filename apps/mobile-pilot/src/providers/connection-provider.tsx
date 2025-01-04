@@ -133,7 +133,18 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
   )
 
   useEffect(() => {
-    const peer = new Peer()
+    const peer = new Peer({
+      secure: false,
+      config: {
+        iceServers: [
+          {
+            urls: "turn:global.relay.metered.ca:80",
+            username: "e778f30e366a357abc99e7cf",
+            credential: "7Dcyfw6ZE/W1xXeG",
+          },
+        ],
+      },
+    })
     setPeer(peer)
     peer.on("open", (id) => {
       console.info(`Peer ID opened. Id: ${id}`)

@@ -20,6 +20,7 @@
   "scripts": {
     "build": "yarn workspaces foreach --all --topological run build",
     "start": "yarn workspaces foreach --all --parallel --interlaced run start",
+    "start:drone-computer": "yarn workspace @aktyn-drone/drone-computer start",
     "dev": "yarn workspaces foreach --all --parallel --interlaced run dev",
     "dev:drone-computer": "yarn workspace @aktyn-drone/drone-computer dev",
     "typecheck": "yarn workspaces foreach --all run typecheck",

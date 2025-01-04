@@ -5,7 +5,7 @@
   "description": "Drone computer control software",
   "main": "dist/main.js",
   "scripts": {
-    "start": "yarn build && node dist/main.js",
+    "start": "tsx dist/main.js",
     "dev": "tsx watch --clear-screen=false src/main.ts",
     "build": "tsc",
     "lint": "eslint src/**/*.ts --fix",
