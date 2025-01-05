@@ -35,7 +35,7 @@ export function initCameraModule() {
               streamCleanup = cleanup
             })
             .catch((error) => {
-              logger.error(error)
+              logger.error("Error starting camera stream", error)
               cleanupStream()
             })
         }

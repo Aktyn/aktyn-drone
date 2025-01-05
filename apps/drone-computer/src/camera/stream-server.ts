@@ -11,7 +11,7 @@ export async function startStreamServer(width: number, height: number) {
   const streamUrl = process.env.CAMERA_STREAM_URL ?? "tcp://127.0.0.1:8888"
   const wsPort = 9999
 
-  logger.log("Starting camera stream")
+  logger.log(`Starting camera stream on url: ${streamUrl}`)
   const libcameraProcess = await startCamera(streamUrl, width, height)
   logger.log("Camera stream started")
   await wait(1_000)
