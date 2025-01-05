@@ -18,4 +18,5 @@ export default defineConfig({
     },
     preserveSymlinks: true,
   },
+  assetsInclude: ["**/*.stl", "**/*.png"],
 })

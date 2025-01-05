@@ -2,20 +2,30 @@ import { RadioTower, Settings2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { FullscreenToggle } from "~/components/common/fullscreen-toggle"
 import { Button } from "~/components/ui/button.tsx"
+import { Checkbox } from "~/components/ui/checkbox"
 import { Input } from "~/components/ui/input.tsx"
+import { Label } from "~/components/ui/label"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover"
+import { Separator } from "~/components/ui/separator"
 import { LAST_CONNECTED_PEER_ID_KEY } from "~/lib/consts"
 import { useConnection } from "~/providers/connection-provider.tsx"
 import { Footer } from "./footer"
 import { TurnServerForm } from "./turn-server-form"
 
 export function Menu() {
-  const { selfPeerId, turnServer, setTurnServer, connect, peerError } =
-    useConnection()
+  const {
+    selfPeerId,
+    turnServer,
+    setTurnServer,
+    useTurnServer,
+    setUseTurnServer,
+    connect,
+    peerError,
+  } = useConnection()
 
   const [peerId, setPeerId] = useState(
     localStorage.getItem(LAST_CONNECTED_PEER_ID_KEY) ?? "",
@@ -79,20 +89,35 @@ export function Menu() {
             <div>{peerError.message}</div>
           </div>
         )}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="secondary">
-              <Settings2 />
-              Configure TURN server
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="flex flex-col gap-y-2 w-64 [&_svg]:text-muted-foreground">
-            <TurnServerForm
-              defaultValues={turnServer}
-              onApply={setTurnServer}
-            />
-          </PopoverContent>
-        </Popover>
+        <Separator />
+        <div className="text-lg font-semibold text-center text-muted-foreground">
+          TURN server
+        </div>
+        <div className="flex items-center justify-center gap-x-2">
+          <Checkbox
+            id="throttle-safety"
+            checked={useTurnServer}
+            onCheckedChange={(checked) => {
+              setUseTurnServer(!!checked)
+            }}
+          />
+          <Label htmlFor="throttle-safety" className="cursor-pointer">
+            Use TURN server
+          </Label>
+        </div>
+        {useTurnServer && turnServer && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="secondary">
+                <Settings2 />
+                Configure TURN server
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="flex flex-col gap-y-2 w-64 [&_svg]:text-muted-foreground animate-in fade-in">
+              <TurnServerForm server={turnServer} onApply={setTurnServer} />
+            </PopoverContent>
+          </Popover>
+        )}
       </div>
       <Footer />
     </div>

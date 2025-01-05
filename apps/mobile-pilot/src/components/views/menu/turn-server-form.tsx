@@ -1,22 +1,24 @@
 import { useState } from "react"
 import { Button } from "~/components/ui/button"
 import { Input } from "~/components/ui/input"
-import type { TurnServer } from "~/providers/connection-provider"
-
+import { type TurnServer } from "~/lib/consts"
 type TurnServerFormProps = {
-  defaultValues: TurnServer | null
+  server: TurnServer
   onApply: (turnServer: TurnServer) => void
 }
 
-export function TurnServerForm({
-  defaultValues,
-  onApply,
-}: TurnServerFormProps) {
-  const [urls, setUrls] = useState(defaultValues?.urls ?? "")
-  const [username, setUsername] = useState(defaultValues?.username ?? "")
-  const [credential, setCredential] = useState(defaultValues?.credential ?? "")
+export function TurnServerForm({ server, onApply }: TurnServerFormProps) {
+  const [urls, setUrls] = useState(server?.urls ?? "")
+  const [username, setUsername] = useState(server?.username ?? "")
+  const [credential, setCredential] = useState(server?.credential ?? "")
 
-  const ready = !!urls && !!username && !!credential
+  const ready =
+    !!urls &&
+    !!username &&
+    !!credential &&
+    (urls !== server?.urls ||
+      username !== server?.username ||
+      credential !== server?.credential)
 
   return (
     <div className="flex flex-col items-stretch gap-y-2">

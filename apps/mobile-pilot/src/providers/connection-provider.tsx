@@ -10,12 +10,20 @@ import {
   useState,
 } from "react"
 import { useStateToRef } from "~/hooks/useStateToRef"
-import { LAST_CONNECTED_PEER_ID_KEY, TURN_SERVER_KEY } from "~/lib/consts"
+import {
+  getTurnServer,
+  LAST_CONNECTED_PEER_ID_KEY,
+  TURN_SERVER_KEY,
+  type TurnServer,
+  USE_TURN_SERVER_KEY,
+} from "~/lib/consts"
 
 const ConnectionContext = createContext({
   selfPeerId: null as string | null,
-  turnServer: null as TurnServer | null,
+  turnServer: {} as TurnServer,
   setTurnServer: (_turnServer: TurnServer) => {},
+  useTurnServer: false,
+  setUseTurnServer: (_useTurnServer: boolean) => {},
   connect: (_peerId: string) => {},
   disconnect: () => {},
   isConnected: false,
@@ -27,25 +35,14 @@ const ConnectionContext = createContext({
 })
 
 type MessageListener = (message: Message, connection: DataConnection) => void
-export type TurnServer = {
-  urls: string
-  username: string
-  credential: string
-}
-
-const cachedTurnServer = localStorage.getItem(TURN_SERVER_KEY)
-const defaultTurnServer: TurnServer = cachedTurnServer
-  ? JSON.parse(cachedTurnServer)
-  : {
-      urls: "turn:global.relay.metered.ca:80",
-      username: "e778f30e366a357abc99e7cf",
-      credential: "7Dcyfw6ZE/W1xXeG",
-    }
 
 export function ConnectionProvider({ children }: PropsWithChildren) {
   const listenersRef = useRef<MessageListener[]>([])
 
-  const [turnServer, setTurnServer] = useState(defaultTurnServer)
+  const [turnServer, setTurnServer] = useState(getTurnServer())
+  const [useTurnServer, setUseTurnServerInternal] = useState(
+    localStorage.getItem(USE_TURN_SERVER_KEY) === "true",
+  )
   const [selfPeerId, setSelfPeerId] = useState<string | null>(null)
   const [peer, setPeer] = useState<Peer | null>(null)
   const [connections, setConnections] = useState<DataConnection[]>([])
@@ -150,16 +147,19 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
   )
 
   useEffect(() => {
-    if (!turnServer) {
-      return
+    if (turnServer) {
+      localStorage.setItem(TURN_SERVER_KEY, JSON.stringify(turnServer))
     }
 
-    localStorage.setItem(TURN_SERVER_KEY, JSON.stringify(turnServer))
-
+    if (turnServer && useTurnServer) {
+      console.info("Creating peer with turn server", turnServer)
+    } else {
+      console.info("Creating peer without turn server")
+    }
     const peer = new Peer({
       secure: false,
       config: {
-        iceServers: [turnServer],
+        iceServers: turnServer && useTurnServer ? [turnServer] : [],
       },
     })
     setPeer(peer)
@@ -195,7 +195,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
       peer.removeAllListeners()
       peer.destroy()
     }
-  }, [handleConnection, turnServer])
+  }, [handleConnection, turnServer, useTurnServer])
 
   const connect = useCallback(
     (peerId: string) => {
@@ -234,12 +234,19 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
     listenersRef.current = listenersRef.current.filter((l) => l !== listener)
   }, [])
 
+  const setUseTurnServer = useCallback((useTurnServer: boolean) => {
+    setUseTurnServerInternal(useTurnServer)
+    localStorage.setItem(USE_TURN_SERVER_KEY, useTurnServer ? "true" : "false")
+  }, [])
+
   return (
     <ConnectionContext.Provider
       value={{
         selfPeerId,
         turnServer,
         setTurnServer,
+        useTurnServer,
+        setUseTurnServer,
         connect,
         disconnect,
         isConnected: connections.length > 0,

@@ -4,6 +4,8 @@ import * as THREE from "three"
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js"
 import { Button } from "~/components/ui/button"
 import { cn } from "~/lib/utils"
+//@ts-expect-error importing asset file
+import quadcopterStl from "~/assets/quadcopter.stl"
 
 export type DroneOrientationWidgetProps = {
   pitch: number
@@ -51,7 +53,7 @@ export function DroneOrientationWidget({
 
     const loader = new STLLoader()
     loader
-      .loadAsync("/quadcopter.stl")
+      .loadAsync(quadcopterStl)
       .then((geometry) => {
         const material = new THREE.MeshPhongMaterial({
           color: 0xffffff,
