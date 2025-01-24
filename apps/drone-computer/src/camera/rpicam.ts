@@ -7,7 +7,12 @@ import { logger } from "../logger"
 
 const executable = "rpicam-vid"
 
-export function startCamera(url: string, width = 480, height = 360) {
+export function startCamera(
+  url: string,
+  width = 480,
+  height = 360,
+  framerate = 20,
+) {
   try {
     execSync(`pkill -f ${executable}`)
     logger.warn("Killed existing rpicam-vid processes")
@@ -24,17 +29,19 @@ export function startCamera(url: string, width = 480, height = 360) {
     "--hdr",
     "off",
     "--framerate",
-    "25",
+    framerate.toString(),
     "--width",
     width.toString(),
     "--height",
     height.toString(),
+    "--bitrate",
+    "10kbps",
     "--codec",
     "mjpeg",
     "--quality",
     "50",
     "--intra",
-    "25",
+    framerate.toString(),
     "--listen",
     "-o",
     url,
@@ -54,7 +61,6 @@ export function startCamera(url: string, width = 480, height = 360) {
     camProcess.stdio[2]?.on("data", (data) => {
       try {
         const message = Buffer.from(data).toString("utf8")
-        // logger.log(message)
 
         if (message.match(/Registered camera/i) && timeout) {
           clearTimeout(timeout)

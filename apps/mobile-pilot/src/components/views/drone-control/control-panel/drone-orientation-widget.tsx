@@ -76,7 +76,46 @@ export function DroneOrientationWidget({
 
         setMesh(mesh)
       })
-      .catch(console.error)
+      .catch((error) => {
+        console.error("Cannot load .stl model:", error)
+        loadFallback()
+      })
+
+    function loadFallback() {
+      const geometry = new THREE.BoxGeometry(10, 20, 2)
+
+      const mesh = new THREE.Mesh(
+        geometry,
+        new THREE.MeshPhongMaterial({
+          color: 0xffffff,
+          specular: 0xffffff,
+          shininess: 20,
+        }),
+      )
+
+      geometry.center()
+      camera.lookAt(mesh.position)
+
+      const arrow = new THREE.ArrowHelper(
+        new THREE.Vector3(0, 1, 0),
+        new THREE.Vector3(0, 0, 2),
+        12,
+        0x22ccff,
+        4,
+        2,
+      )
+
+      const ambientLight = new THREE.AmbientLight(0x070e15, 10)
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
+      directionalLight.position.set(0, -5, 20)
+
+      scene.add(ambientLight)
+      scene.add(directionalLight)
+      scene.add(mesh)
+      mesh.add(arrow)
+
+      setMesh(mesh)
+    }
 
     function animate() {
       requestAnimationFrame(animate)

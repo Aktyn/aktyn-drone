@@ -51,14 +51,11 @@ export type Message =
       {
         width: number
         height: number
+        framerate: number
       }
     >
-  | MessageBase<
-      MessageType.CLOSE_CAMERA_STREAM,
-      {
-        streamId: string
-      }
-    >
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | MessageBase<MessageType.CLOSE_CAMERA_STREAM, {}>
   | MessageBase<
       MessageType.CAMERA_DATA,
       {

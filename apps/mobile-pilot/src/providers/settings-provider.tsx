@@ -3,30 +3,44 @@ import {
   type PropsWithChildren,
   useCallback,
   useContext,
-  useState,
 } from "react"
-import { CAMERA_RESOLUTION_KEY, CAMERA_RESOLUTIONS } from "~/lib/consts"
+import { defaultSettings, SETTINGS_KEY } from "~/lib/consts"
+import { useGlobalState } from "../hooks/useGlobalState"
 
-const SettingsContext = createContext({
-  cameraResolution: CAMERA_RESOLUTIONS[0],
-  setCameraResolution: (_resolution: (typeof CAMERA_RESOLUTIONS)[number]) => {},
+type SettingsValueSetter = <KeyType extends keyof typeof defaultSettings>(
+  key: KeyType,
+  value: (typeof defaultSettings)[KeyType],
+) => void
+
+const SettingsContext = createContext<{
+  settings: typeof defaultSettings
+  setSettingsValue: SettingsValueSetter
+}>({
+  settings: defaultSettings,
+  setSettingsValue: (_key, _value) => {},
 })
 
 export const SettingsProvider = ({ children }: PropsWithChildren) => {
-  const [cameraResolution, internalSetCameraResolution] = useState(
-    getCameraResolutionFromLocalStorage(),
+  const [settings, internalSetSettings] = useGlobalState(
+    SETTINGS_KEY,
+    defaultSettings,
+    localStorage,
   )
 
-  const setCameraResolution = useCallback(
-    (resolution: (typeof CAMERA_RESOLUTIONS)[number]) => {
-      localStorage.setItem(CAMERA_RESOLUTION_KEY, JSON.stringify(resolution))
-      internalSetCameraResolution(resolution)
+  const setSettingsValue = useCallback<SettingsValueSetter>(
+    (key, value) => {
+      internalSetSettings((prev) => ({ ...prev, [key]: value }))
     },
-    [],
+    [internalSetSettings],
   )
 
   return (
-    <SettingsContext.Provider value={{ cameraResolution, setCameraResolution }}>
+    <SettingsContext.Provider
+      value={{
+        settings: settings ?? defaultSettings,
+        setSettingsValue,
+      }}
+    >
       {children}
     </SettingsContext.Provider>
   )
@@ -34,15 +48,3 @@ export const SettingsProvider = ({ children }: PropsWithChildren) => {
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useSettings = () => useContext(SettingsContext)
-
-function getCameraResolutionFromLocalStorage() {
-  try {
-    const item = localStorage.getItem(CAMERA_RESOLUTION_KEY)
-    if (item) {
-      return JSON.parse(item)
-    }
-  } catch (error) {
-    console.error(error)
-  }
-  return CAMERA_RESOLUTIONS[0]
-}

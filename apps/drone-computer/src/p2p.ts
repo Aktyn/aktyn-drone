@@ -123,6 +123,7 @@ export class Connection extends EventEmitter<EventMap> {
         )
         break
       case MessageType.REQUEST_CAMERA_STREAM:
+      case MessageType.CLOSE_CAMERA_STREAM:
       case MessageType.REQUEST_TELEMETRY:
       case MessageType.SET_THROTTLE:
       case MessageType.SEND_EULER_ANGLES:

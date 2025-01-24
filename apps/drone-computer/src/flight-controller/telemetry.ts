@@ -24,6 +24,7 @@ export class Telemetry {
     heading: { value: -Infinity, tolerance: 1 },
     altitude: { value: -Infinity, tolerance: 0.1 },
     satellites: { value: -Infinity, tolerance: 1 },
+    rpiTemperature: { value: -Infinity, tolerance: 0.1 },
   } as const satisfies TelemetryComparatorState
   private homePoint: {
     latitude: number
@@ -138,7 +139,7 @@ export class Telemetry {
     })
   }
 
-  private synchronizeTelemetry(data: TelemetryData) {
+  synchronizeTelemetry(data: TelemetryData) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { type, ...dataWithoutType } = data
 

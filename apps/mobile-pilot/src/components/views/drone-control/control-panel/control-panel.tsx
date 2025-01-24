@@ -23,6 +23,7 @@ import { Joystick } from "./joystick"
 import { ThrottleSlider } from "./throttle-slider"
 import { AUXPanel } from "./aux-panel"
 import { Separator } from "~/components/ui/separator"
+import { useSettings } from "~/providers/settings-provider"
 
 type ControlPanelProps = DroneOrientationWidgetProps & ControlPanelMainProps
 
@@ -45,8 +46,9 @@ type ControlPanelMainProps = {
 
 const ControlPanelMain = memo<ControlPanelMainProps>(
   ({ onPreviewMaximizedChange }) => {
-    const { send } = useConnection()
     const throttleAcceleratorRef = useRef(0)
+    const { send } = useConnection()
+    const { settings } = useSettings()
 
     const [maximizeCameraPreview, setMaximizeCameraPreview] = useState(false)
     const [eulerAngles, setEulerAngles] = useState({
@@ -56,6 +58,12 @@ const ControlPanelMain = memo<ControlPanelMainProps>(
     })
     const [throttle, setThrottle] = useState(0)
     const [throttleSafety, setThrottleSafety] = useState(true)
+
+    useEffect(() => {
+      if (!settings.showCameraPreview) {
+        setMaximizeCameraPreview(false)
+      }
+    }, [settings.showCameraPreview])
 
     const updateEulerAngles = useCallback(
       (data: Partial<typeof eulerAngles>) => {
@@ -131,6 +139,7 @@ const ControlPanelMain = memo<ControlPanelMainProps>(
           <Joystick
             className="pointer-events-auto"
             disableVertical={throttleSafety}
+            keyboardKeys={["a", "d", "s", "w"]}
             onChange={(yaw, throttleAccelerator) => {
               updateEulerAngles({ yaw })
               throttleAcceleratorRef.current = throttleAccelerator
@@ -175,6 +184,7 @@ const ControlPanelMain = memo<ControlPanelMainProps>(
           />
           <Joystick
             className="mt-auto pointer-events-auto"
+            keyboardKeys={["ArrowLeft", "ArrowRight", "ArrowDown", "ArrowUp"]}
             onChange={(roll, pitch) => updateEulerAngles({ roll, pitch })}
           />
         </div>

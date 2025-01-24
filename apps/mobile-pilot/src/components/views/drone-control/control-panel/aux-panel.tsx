@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { MessageType } from "@aktyn-drone/common"
 import { CircleCheck, RefreshCcw } from "lucide-react"
-import { memo, useCallback, useEffect, useState } from "react"
+import {
+  memo,
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useState,
+} from "react"
 import { Button } from "~/components/ui/button"
 import { Label } from "~/components/ui/label"
 import { ScrollArea } from "~/components/ui/scroll-area"
@@ -89,37 +95,44 @@ type AuxParams = {
   setAux: (index: number, value: number) => void
 }
 
-function BasicAUX({ auxValues, setAux }: AuxParams) {
-  const arm = Math.abs(auxValues[0].value - 90.66) < 0.1
-  const angleMode = Math.abs(auxValues[1].value - 90.66) < 0.1
-
+function BasicAUX(props: AuxParams) {
   return (
     <ScrollArea>
       <div className="flex flex-col gap-y-2 p-2 *:grid *:grid-cols-[1fr_auto_1fr] *:whitespace-nowrap">
-        <Toggle
-          variant="outline"
-          size="default"
-          pressed={arm}
-          onPressedChange={(pressed) => {
-            setAux(0, pressed ? 90.66 : 9.349593495934959)
-          }}
-        >
-          <CheckIndicator checked={arm} />
+        <AuxToggle {...props} auxIndex={0}>
           Arm
-        </Toggle>
-        <Toggle
-          variant="outline"
-          size="default"
-          pressed={angleMode}
-          onPressedChange={(pressed) => {
-            setAux(1, pressed ? 90.66 : 9.349593495934959)
-          }}
-        >
-          <CheckIndicator checked={angleMode} />
+        </AuxToggle>
+        <AuxToggle {...props} auxIndex={1}>
           Angle mode
-        </Toggle>
+        </AuxToggle>
+        <AuxToggle {...props} auxIndex={3}>
+          GPS rescue
+        </AuxToggle>
       </div>
     </ScrollArea>
+  )
+}
+
+type AuxToggleProps = PropsWithChildren<
+  AuxParams & {
+    auxIndex: number
+  }
+>
+
+function AuxToggle({ auxIndex, auxValues, setAux, children }: AuxToggleProps) {
+  const toggled = Math.abs(auxValues[auxIndex].value - 90.66) < 0.1
+  return (
+    <Toggle
+      variant="outline"
+      size="default"
+      pressed={toggled}
+      onPressedChange={(pressed) => {
+        setAux(auxIndex, pressed ? 90.66 : 9.349593495934959)
+      }}
+    >
+      <CheckIndicator checked={toggled} />
+      {children}
+    </Toggle>
   )
 }
 

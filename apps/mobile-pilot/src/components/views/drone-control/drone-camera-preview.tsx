@@ -1,4 +1,4 @@
-import { MessageType } from "@aktyn-drone/common"
+import { clamp, MessageType } from "@aktyn-drone/common"
 import {
   memo,
   type PropsWithChildren,
@@ -35,12 +35,16 @@ declare global {
   }
 }
 
-type DroneCameraPreviewProps = PropsWithChildren<{ className?: string }>
+type DroneCameraPreviewProps = PropsWithChildren<{
+  className?: string
+  hideNoPreviewInfo?: boolean
+}>
 
 export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
-  ({ children, className }) => {
+  ({ children, className, hideNoPreviewInfo }) => {
     const { send, isConnected } = useConnection()
-    const { cameraResolution } = useSettings()
+    const { settings } = useSettings()
+    const { showCameraPreview, cameraResolution, cameraFramerate } = settings
 
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const imageRef = useRef<HTMLImageElement>(null)
@@ -55,31 +59,59 @@ export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
       if (!isConnected) {
         return
       }
-      console.info("Requesting camera stream with resolution", cameraResolution)
-      const timeout = setTimeout(() => {
+
+      let timeout: NodeJS.Timeout | undefined
+      if (showCameraPreview) {
+        console.info(
+          `Requesting camera stream\nresolution: ${JSON.stringify(
+            cameraResolution,
+          )}\nframerate: ${cameraFramerate}`,
+        )
+        timeout = setTimeout(() => {
+          send({
+            type: MessageType.REQUEST_CAMERA_STREAM,
+            data: {
+              width: cameraResolution.width,
+              height: cameraResolution.height,
+              framerate: clamp(cameraFramerate, 1, 60),
+            },
+          })
+        }, 16)
+      } else {
         send({
-          type: MessageType.REQUEST_CAMERA_STREAM,
-          data: {
-            width: cameraResolution.width,
-            height: cameraResolution.height,
-          },
+          type: MessageType.CLOSE_CAMERA_STREAM,
+          data: {},
         })
-      }, 16)
+      }
 
-      return () => clearTimeout(timeout)
-    }, [send, isConnected, cameraResolution])
+      return () => {
+        if (timeout) {
+          clearTimeout(timeout)
+        }
+      }
+    }, [
+      send,
+      isConnected,
+      cameraResolution,
+      showCameraPreview,
+      cameraFramerate,
+    ])
 
-    useInterval(() => {
-      const canvas = canvasRef.current
-      const image = imageRef.current
-      if (!canvas || !image) return
+    useInterval(
+      () => {
+        const canvas = canvasRef.current
+        const image = imageRef.current
+        if (!canvas || !image || !showCameraPreview) return
 
-      getCanvasSnapshot(canvas)
-        .then((url) => {
-          image.src = url
-        })
-        .catch(console.error)
-    }, 10_000)
+        getCanvasSnapshot(canvas)
+          .then((url) => {
+            image.src = url
+          })
+          .catch(console.error)
+      },
+      10_000,
+      [showCameraPreview],
+    )
 
     useConnectionMessageHandler((message) => {
       switch (message.type) {
@@ -96,7 +128,9 @@ export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
 
     useEffect(() => {
       const canvas = canvasRef.current
-      if (!canvas) return
+      if (!canvas || !showCameraPreview) {
+        return
+      }
 
       let readyTimeout: NodeJS.Timeout | null = null
 
@@ -135,7 +169,26 @@ export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
         }
         p2pPlayerRef.current = null
       }
-    }, [snapshot])
+    }, [snapshot, showCameraPreview])
+
+    if (!showCameraPreview) {
+      if (hideNoPreviewInfo) {
+        return null
+      }
+
+      return (
+        <div
+          className={cn(
+            "rounded-lg flex items-center justify-center border shadow-lg p-8 aspect-[4/3] backdrop-blur-sm bg-background/50",
+            className,
+          )}
+        >
+          <span className="text-muted-foreground text-2xl text-center font-bold">
+            Camera preview is disabled
+          </span>
+        </div>
+      )
+    }
 
     return (
       <div

@@ -7,12 +7,21 @@ import { startCamera } from "./rpicam"
 //@ts-expect-error There are no types for node-rtsp-stream
 import Stream from "node-rtsp-stream"
 
-export async function startStreamServer(width: number, height: number) {
+export async function startStreamServer(
+  width: number,
+  height: number,
+  framerate: number,
+) {
   const streamUrl = process.env.CAMERA_STREAM_URL ?? "tcp://127.0.0.1:8888"
   const wsPort = 9999
 
   logger.log(`Starting camera stream on url: ${streamUrl}`)
-  const libcameraProcess = await startCamera(streamUrl, width, height)
+  const libcameraProcess = await startCamera(
+    streamUrl,
+    width,
+    height,
+    framerate,
+  )
   logger.log("Camera stream started")
   await wait(1_000)
 
@@ -25,8 +34,8 @@ export async function startStreamServer(width: number, height: number) {
     height,
     ffmpegOptions: {
       "-stats": "",
-      "-r": 25,
-      "-q:v": 3,
+      "-r": Math.max(framerate, 20).toString(),
+      "-q:v": "1",
       "-probesize": "48M",
     },
   })

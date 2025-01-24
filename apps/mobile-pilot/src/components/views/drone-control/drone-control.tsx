@@ -44,12 +44,13 @@ export const DroneControl = memo(() => {
     roll: -Infinity,
     yaw: -Infinity,
     percentage: -Infinity,
-    latitude: -Infinity, //51.776936
-    longitude: -Infinity, //19.427419
+    latitude: -Infinity,
+    longitude: -Infinity,
     groundSpeed: -Infinity,
     heading: -Infinity,
     altitude: -Infinity,
     satellites: -Infinity,
+    rpiTemperature: -Infinity,
   })
 
   const isFullScreenRef = useStateToRef(isFullscreen)

@@ -22,10 +22,18 @@ export function getTurnServer(): TurnServer {
     : defaultTurnServer
 }
 
-export const CAMERA_RESOLUTION_KEY = "cameraResolution"
+export const AUX_CHANNELS_COUNT = 12
+
 export const CAMERA_RESOLUTIONS = [
   { width: 640, height: 480 },
   { width: 1920, height: 1080 },
 ]
 
-export const AUX_CHANNELS_COUNT = 12
+export const SETTINGS_KEY = "settings"
+
+export const defaultSettings = {
+  showCameraPreview: true,
+  cameraResolution: CAMERA_RESOLUTIONS[0],
+  smoothKeyboardControls: false,
+  cameraFramerate: 20,
+}

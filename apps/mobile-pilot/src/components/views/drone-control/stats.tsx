@@ -11,6 +11,7 @@ import {
   MapPin,
   Rotate3D,
   Satellite,
+  Thermometer,
 } from "lucide-react"
 import { memo, type ReactNode } from "react"
 import { Button } from "~/components/ui/button"
@@ -122,15 +123,28 @@ export const Stats = memo<StatsProps>(({ className, telemetry }) => {
             />
             <StatsItem
               className={cn(
-                telemetry.satellites >= 5
-                  ? "text-green-400"
-                  : telemetry.satellites >= 3
-                    ? "text-yellow-400"
+                (telemetry.satellites ?? 0) >= 5
+                  ? "last:*:text-green-400"
+                  : (telemetry.satellites ?? 0) >= 3
+                    ? "last:*:text-yellow-400"
                     : "text-red-400 animate-pulse",
               )}
               label="Satellites:"
-              value={telemetry.satellites.toString()}
+              value={telemetry.satellites?.toString() ?? "-"}
               icon={<Satellite />}
+            />
+            <Separator />
+            <StatsItem
+              className={cn(
+                telemetry.rpiTemperature > 70
+                  ? "text-red-400"
+                  : telemetry.rpiTemperature > 50
+                    ? "last:*:text-yellow-400"
+                    : "last:*:text-green-400",
+              )}
+              label="RPi Temperature:"
+              value={formatDecimal(telemetry.rpiTemperature, 2) + "°C"}
+              icon={<Thermometer />}
             />
           </PopoverContent>
         </Popover>

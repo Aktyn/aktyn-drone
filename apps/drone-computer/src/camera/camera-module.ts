@@ -26,11 +26,16 @@ export function initCameraModule() {
         if (
           !currentStreamResolution ||
           currentStreamResolution.width !== message.data.width ||
-          currentStreamResolution.height !== message.data.height
+          currentStreamResolution.height !== message.data.height ||
+          currentStreamResolution.framerate !== message.data.framerate
         ) {
           cleanupStream()
           currentStreamResolution = message.data
-          startStreamServer(message.data.width, message.data.height)
+          startStreamServer(
+            message.data.width,
+            message.data.height,
+            message.data.framerate,
+          )
             .then((cleanup) => {
               streamCleanup = cleanup
             })

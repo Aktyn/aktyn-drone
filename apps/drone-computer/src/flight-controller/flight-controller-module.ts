@@ -1,15 +1,23 @@
-import { type Message, MessageType } from "@aktyn-drone/common"
+import { type Message, MessageType, TelemetryType } from "@aktyn-drone/common"
 import { type ChildProcessWithoutNullStreams, spawn } from "child_process"
 import path from "path"
 import type { DataConnection } from "../../types/peerjs"
 import { logger } from "../logger"
 import { Connection } from "../p2p"
 import { Telemetry } from "./telemetry"
+import { getRpiTemperature } from "./temperature-monitor"
 
 export function initFlightControllerModule() {
   logger.info("Initializing flight controller module")
 
   const telemetry = new Telemetry()
+
+  const temperatureMonitorInterval = setInterval(() => {
+    telemetry.synchronizeTelemetry({
+      type: TelemetryType.MISCELLANEOUS,
+      rpiTemperature: getRpiTemperature(),
+    })
+  }, 5_000)
 
   let pythonScriptProcess: ChildProcessWithoutNullStreams | null = null
 
@@ -89,6 +97,8 @@ export function initFlightControllerModule() {
   return {
     cleanup: () => {
       Connection.removeListener("message", handleMessage)
+
+      clearInterval(temperatureMonitorInterval)
 
       try {
         pythonScriptProcess?.kill()

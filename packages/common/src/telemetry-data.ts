@@ -1,8 +1,12 @@
-export type TelemetryDataFull = {
+type AltitudeTelemetryData = {
   pitch: number
   roll: number
   yaw: number
+}
+type BatteryTelemetryData = {
   percentage: number
+}
+type GpsTelemetryData = {
   latitude: number
   longitude: number
   /** cm/s */
@@ -13,28 +17,33 @@ export type TelemetryDataFull = {
   altitude: number
   satellites: number
 }
+type MiscellaneousTelemetryData = {
+  /** degrees Celsius */
+  rpiTemperature: number
+}
+
+export type TelemetryDataFull = AltitudeTelemetryData &
+  BatteryTelemetryData &
+  GpsTelemetryData &
+  MiscellaneousTelemetryData
 
 export enum TelemetryType {
   ATTITUDE = "attitude",
   BATTERY = "battery",
   GPS = "gps",
+  MISCELLANEOUS = "miscellaneous",
 }
 
 export type TelemetryData =
   | ({
       type: TelemetryType.ATTITUDE
-    } & Pick<TelemetryDataFull, "pitch" | "roll" | "yaw">)
+    } & AltitudeTelemetryData)
   | ({
       type: TelemetryType.BATTERY
-    } & Pick<TelemetryDataFull, "percentage">)
+    } & BatteryTelemetryData)
   | ({
       type: TelemetryType.GPS
-    } & Pick<
-      TelemetryDataFull,
-      | "latitude"
-      | "longitude"
-      | "groundSpeed"
-      | "heading"
-      | "altitude"
-      | "satellites"
-    >)
+    } & GpsTelemetryData)
+  | ({
+      type: TelemetryType.MISCELLANEOUS
+    } & MiscellaneousTelemetryData)
