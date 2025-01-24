@@ -130,6 +130,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
             awaitingId = null
             break
           case MessageType.LOG:
+          case MessageType.TODAY_LOGS:
           case MessageType.CAMERA_DATA:
           case MessageType.TELEMETRY_UPDATE:
           case MessageType.TELEMETRY_FULL:

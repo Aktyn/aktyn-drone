@@ -59,34 +59,77 @@ export const DroneControl = memo(() => {
       void toggleFullscreen()
     }
 
-    const timeout = setTimeout(() => {
+    const todayLogsTimeout = setTimeout(() => {
+      send({
+        type: MessageType.REQUEST_TODAY_LOGS,
+        data: {},
+      })
+    }, 100)
+
+    const telemetryTimeout = setTimeout(() => {
       send({
         type: MessageType.REQUEST_TELEMETRY,
         data: {},
       })
     }, 1_000)
 
-    return () => clearTimeout(timeout)
+    return () => {
+      clearTimeout(telemetryTimeout)
+      clearTimeout(todayLogsTimeout)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useConnectionMessageHandler((message) => {
+    const formatDate = (date: Date) =>
+      date.toLocaleTimeString("en-GB", {
+        hourCycle: "h24",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+
     switch (message.type) {
       case MessageType.LOG:
         if (message.data.timestamp - MINUTE > lastLogTimestampPin.current) {
           lastLogTimestampPin.current = message.data.timestamp
           setLogs((prev) => [
             ...prev,
-            new Date(message.data.timestamp).toLocaleTimeString("en-GB", {
-              hourCycle: "h24",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            }),
+            formatDate(new Date(message.data.timestamp)),
             message.data,
           ])
         } else {
           setLogs((prev) => [...prev, message.data])
+        }
+        break
+      case MessageType.TODAY_LOGS:
+        {
+          const todayLogs: typeof logs = []
+
+          const lines = message.data.todayLogsFileContent.split("\n")
+          for (const line of lines) {
+            const minuteSeparator = line.match(/--- (\d{2}:\d{2}) ---/)
+            if (minuteSeparator) {
+              todayLogs.push(
+                formatDate(
+                  new Date(
+                    `${new Date().toDateString()} ${minuteSeparator[1]}`,
+                  ),
+                ),
+              )
+              continue
+            }
+
+            const logLine = line.match(/^\[(.*)\] (.*)/)
+            if (logLine) {
+              todayLogs.push({
+                timestamp: Date.now(),
+                method: logLine[1] as never,
+                args: [logLine[2]],
+              })
+            }
+          }
+          setLogs((prev) => [...todayLogs, ...prev])
         }
         break
       case MessageType.TELEMETRY_UPDATE:

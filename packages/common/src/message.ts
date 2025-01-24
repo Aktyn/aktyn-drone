@@ -5,6 +5,8 @@ export enum MessageType {
   PING = "ping",
   PONG = "pong",
   LOG = "log",
+  REQUEST_TODAY_LOGS = "request_today_logs",
+  TODAY_LOGS = "today_logs",
   REQUEST_CAMERA_STREAM = "request_camera_stream",
   CLOSE_CAMERA_STREAM = "close_camera_stream",
   CAMERA_DATA = "camera_data",
@@ -46,6 +48,9 @@ export type Message =
         args: unknown[]
       }
     >
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | MessageBase<MessageType.REQUEST_TODAY_LOGS, {}>
+  | MessageBase<MessageType.TODAY_LOGS, { todayLogsFileContent: string }>
   | MessageBase<
       MessageType.REQUEST_CAMERA_STREAM,
       {

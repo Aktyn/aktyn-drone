@@ -1,7 +1,7 @@
 import { MessageType, type Message } from "@aktyn-drone/common"
 import { EventEmitter } from "events"
 import type { DataConnection, Peer as PeerJS } from "../types/peerjs"
-import { logger } from "./logger"
+import { getTodayLogs, logger } from "./logger"
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Peer = require("peerjs-on-node").Peer as typeof PeerJS
@@ -118,6 +118,15 @@ export class Connection extends EventEmitter<EventMap> {
           {
             type: MessageType.PONG,
             data: { pingId: message.data.id },
+          },
+          [conn],
+        )
+        break
+      case MessageType.REQUEST_TODAY_LOGS:
+        Connection.broadcast(
+          {
+            type: MessageType.TODAY_LOGS,
+            data: { todayLogsFileContent: getTodayLogs() },
           },
           [conn],
         )

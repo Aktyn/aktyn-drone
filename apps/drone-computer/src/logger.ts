@@ -47,9 +47,7 @@ function logFunctionFactory<MethodType extends keyof LogFunctions & string>(
 const MINUTE = 60 * 1000
 let lastTimestampMinute = 0
 function saveToFile(data: string, timestamp: number) {
-  const date = new Date()
-  const dateString = `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`
-  const filePath = path.join(logsDirectory, `${dateString}.log`)
+  const filePath = getTodayLogFilePath()
 
   const timestampMinute = Math.floor(timestamp / MINUTE)
   if (timestampMinute !== lastTimestampMinute) {
@@ -65,6 +63,17 @@ function saveToFile(data: string, timestamp: number) {
   }
 
   appendLine(filePath, data)
+}
+
+function getTodayLogFilePath() {
+  const date = new Date()
+  const dateString = `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())}`
+  return path.join(logsDirectory, `${dateString}.log`)
+}
+
+export function getTodayLogs() {
+  const filePath = getTodayLogFilePath()
+  return fs.readFileSync(filePath, "utf-8")
 }
 
 function appendLine(filePath: string, data: string) {

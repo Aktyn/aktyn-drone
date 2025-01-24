@@ -1,13 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { MessageType } from "@aktyn-drone/common"
 import { CircleCheck, RefreshCcw } from "lucide-react"
-import {
-  memo,
-  type PropsWithChildren,
-  useCallback,
-  useEffect,
-  useState,
-} from "react"
+import { memo, type PropsWithChildren, useCallback, useState } from "react"
 import { Button } from "~/components/ui/button"
 import { Label } from "~/components/ui/label"
 import { ScrollArea } from "~/components/ui/scroll-area"
@@ -21,10 +15,10 @@ import { cn } from "~/lib/utils"
 import { useConnection } from "~/providers/connection-provider"
 
 export const AUXPanel = memo(() => {
-  const { send, isConnected } = useConnection()
+  const { send, selfPeerId } = useConnection()
 
   const [tab, setTab] = useState("basic")
-  const [aux, setAux] = useGlobalState("aux", initialAux)
+  const [aux, setAux] = useGlobalState(`aux-values-${selfPeerId}`, initialAux)
 
   const setAuxValue = useCallback(
     (index: number, value: number) => {
@@ -58,15 +52,6 @@ export const AUXPanel = memo(() => {
 
     return timeouts
   }, [auxRef, send, setAux])
-
-  useEffect(() => {
-    if (!isConnected) {
-      return
-    }
-
-    const timeouts = resetAux()
-    return () => timeouts.forEach((timeout) => clearTimeout(timeout))
-  }, [isConnected, resetAux])
 
   return (
     <div className="flex-grow flex flex-col gap-y-2 w-full overflow-hidden -mb-2">
