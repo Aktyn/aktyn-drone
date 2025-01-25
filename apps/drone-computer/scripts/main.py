@@ -285,7 +285,6 @@ async def handle_stdin(controller):
                             RCChannels.ROLL,
                             factor_to_stick_value(message["value"]["roll"]),
                         )
-                    # TODO: send it continuously (threshold and euler angles) to keep values from resetting
                 elif message["type"] == "set-aux":
                     if "index" in message["value"] and "value" in message["value"]:
                         controller.set_channel(
@@ -295,7 +294,7 @@ async def handle_stdin(controller):
         except Exception:
             print('{"type": "ERROR", "message": "Error reading stdin"}')
             break
-        controller.send_channels()  # TODO: try without continuous channels sending when drone is armed
+        controller.send_channels()
         await asyncio.sleep(0.001)  # Small delay to prevent CPU hogging
 
 

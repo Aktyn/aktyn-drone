@@ -106,7 +106,7 @@ export const DroneControl = memo(() => {
         {
           const todayLogs: typeof logs = []
 
-          const lines = message.data.todayLogsFileContent.split("\n")
+          const lines = (message.data.todayLogsFileContent ?? "").split("\n")
           for (const line of lines) {
             const minuteSeparator = line.match(/--- (\d{2}:\d{2}) ---/)
             if (minuteSeparator) {
@@ -177,7 +177,11 @@ export const DroneControl = memo(() => {
           />
         )}
         {view === View.MAP &&
-          (!awaitingLocation ? (
+          (!awaitingLocation &&
+          typeof telemetry.latitude === "number" &&
+          typeof telemetry.longitude === "number" &&
+          typeof telemetry.satellites === "number" &&
+          typeof telemetry.heading === "number" ? (
             <Map
               latitude={telemetry.latitude}
               longitude={telemetry.longitude}

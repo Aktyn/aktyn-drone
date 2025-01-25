@@ -12,7 +12,10 @@ import { useGlobalState } from "~/hooks/useGlobalState"
 import { useStateToRef } from "~/hooks/useStateToRef"
 import { AUX_CHANNELS_COUNT } from "~/lib/consts"
 import { cn } from "~/lib/utils"
-import { useConnection } from "~/providers/connection-provider"
+import {
+  useConnection,
+  useConnectionMessageHandler,
+} from "~/providers/connection-provider"
 
 export const AUXPanel = memo(() => {
   const { send, selfPeerId } = useConnection()
@@ -53,8 +56,24 @@ export const AUXPanel = memo(() => {
     return timeouts
   }, [auxRef, send, setAux])
 
+  useConnectionMessageHandler((message) => {
+    switch (message.type) {
+      case MessageType.AUX_VALUE:
+        setAux((prev) => {
+          if (message.data.auxIndex >= AUX_CHANNELS_COUNT) {
+            return prev
+          }
+
+          const newAux = [...prev]
+          newAux[message.data.auxIndex] = { value: message.data.value }
+          return newAux
+        })
+        break
+    }
+  })
+
   return (
-    <div className="flex-grow flex flex-col gap-y-2 w-full overflow-hidden -mb-2">
+    <div className="flex flex-col gap-y-2 w-full overflow-hidden bg-background/50 backdrop-blur-md rounded-lg p-4 mb-auto border">
       <Tabs value={tab} onValueChange={setTab} className="h-full flex flex-col">
         <TabsList className="w-full *:flex-1">
           <TabsTrigger value="basic">Basic</TabsTrigger>
@@ -82,7 +101,7 @@ type AuxParams = {
 
 function BasicAUX(props: AuxParams) {
   return (
-    <ScrollArea>
+    <ScrollArea className="p-2 pt-4 -m-4 -mt-2">
       <div className="flex flex-col gap-y-2 p-2 *:grid *:grid-cols-[1fr_auto_1fr] *:whitespace-nowrap">
         <AuxToggle {...props} auxIndex={0}>
           Arm
@@ -140,7 +159,7 @@ function AdvancedAUX({
   )
 
   return (
-    <ScrollArea className="pr-2 pb-2">
+    <ScrollArea className="pr-2 pb-2 -m-4 mt-0">
       <div className="p-2 flex flex-col gap-y-4">
         <Button
           size="sm"

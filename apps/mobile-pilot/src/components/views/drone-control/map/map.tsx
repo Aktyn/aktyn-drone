@@ -112,12 +112,12 @@ export function Map({
         className="absolute top-0 right-0 rounded-none rounded-bl-lg z-10 h-64 max-h-[50%] hover:opacity-25 transition-opacity"
         hideNoPreviewInfo
       />
-      <div className="absolute bottom-2 right-2 flex flex-col gap-y-2 [&>button]:bg-background/50 [&>button]:backdrop-blur-md">
-        <div className="flex flex-row items-center text-lg text-background [text-shadow:0_0_2px_#fff] whitespace-nowrap">
+      <div className="absolute bottom-2 right-2 flex flex-col gap-y-2 [&>button]:bg-background/50 [&>button]:backdrop-blur-md bg-background/50 backdrop-blur-md rounded-lg p-4 border">
+        <div className="flex flex-row items-center text-lg text-foreground [text-shadow:0_0_2px_var(--background)] whitespace-nowrap">
           Satellites:&nbsp;<strong>{satellites}</strong>&nbsp;
           <span
             className={cn(
-              "bg-orange-600 p-2 rounded-full inline-flex items-center justify-center transition-opacity",
+              "bg-orange-500 p-2 rounded-full inline-flex items-center justify-center transition-opacity",
               satellites < 3 ? "opacity-100" : "opacity-0",
             )}
           >

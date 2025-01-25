@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.1.0",
   "description": "Drone computer control software",
-  "main": "dist/main.js",
+  "main": "src/main.ts",
   "scripts": {
     "start": "tsx dist/main.js",
     "dev": "tsx watch --clear-screen=false src/main.ts",

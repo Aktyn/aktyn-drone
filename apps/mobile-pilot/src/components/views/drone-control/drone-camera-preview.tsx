@@ -183,7 +183,7 @@ export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
             className,
           )}
         >
-          <span className="text-muted-foreground text-2xl text-center font-bold">
+          <span className="text-muted-foreground text-2xl text-center font-bold text-balance">
             Camera preview is disabled
           </span>
         </div>

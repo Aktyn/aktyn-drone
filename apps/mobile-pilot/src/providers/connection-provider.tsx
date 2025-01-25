@@ -38,6 +38,7 @@ type MessageListener = (message: Message, connection: DataConnection) => void
 
 export function ConnectionProvider({ children }: PropsWithChildren) {
   const listenersRef = useRef<MessageListener[]>([])
+  const awaitingIdsRef = useRef(new Map<string, string | null>())
 
   const [turnServer, setTurnServer] = useState(getTurnServer())
   const [useTurnServer, setUseTurnServerInternal] = useState(
@@ -72,17 +73,19 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
       setPeerError(null)
 
       let pingInterval: NodeJS.Timeout | null = null
-      let awaitingId: string | null = null
+      awaitingIdsRef.current.set(conn.connectionId, null)
       conn.on("open", () => {
         console.info("Connected to peer")
         setConnections((prev) => [...prev, conn])
         localStorage.setItem(LAST_CONNECTED_PEER_ID_KEY, conn.peer)
 
         pingInterval = setInterval(() => {
-          setUnstableConnection(!!awaitingId)
+          setUnstableConnection(
+            awaitingIdsRef.current.get(conn.connectionId) !== null,
+          )
 
           const id = uuid()
-          awaitingId = id
+          awaitingIdsRef.current.set(conn.connectionId, id)
           broadcast(
             {
               type: MessageType.PING,
@@ -90,13 +93,13 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
             },
             [conn],
           )
-        }, 5_000)
+        }, 50_000)
       })
 
       conn.on("close", () => {
         console.info("Connection closed")
         setConnections((prev) => prev.filter((c) => c !== conn))
-        awaitingId = null
+        awaitingIdsRef.current.delete(conn.connectionId)
         if (pingInterval) {
           clearInterval(pingInterval)
           pingInterval = null
@@ -126,8 +129,11 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
             break
 
           case MessageType.PONG:
-            setUnstableConnection(message.data.pingId !== awaitingId)
-            awaitingId = null
+            setUnstableConnection(
+              message.data.pingId !==
+                awaitingIdsRef.current.get(conn.connectionId),
+            )
+            awaitingIdsRef.current.set(conn.connectionId, null)
             break
           case MessageType.LOG:
           case MessageType.TODAY_LOGS:
@@ -135,6 +141,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
           case MessageType.TELEMETRY_UPDATE:
           case MessageType.TELEMETRY_FULL:
           case MessageType.HOME_POINT_COORDINATES:
+          case MessageType.AUX_VALUE:
             // noop
             break
         }

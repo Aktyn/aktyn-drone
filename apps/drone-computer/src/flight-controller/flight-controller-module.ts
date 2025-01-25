@@ -67,7 +67,10 @@ export function initFlightControllerModule() {
         })
         break
       case MessageType.SET_AUX:
-        if (message.data.auxIndex === 0 && message.data.value === 90.66) {
+        if (
+          message.data.auxIndex === 0 &&
+          Math.abs(message.data.value - 90.66) < 0.1
+        ) {
           telemetry.setHomePoint()
         }
         sendMessageToPython({
@@ -106,6 +109,7 @@ export function initFlightControllerModule() {
         logger.error("Error killing python script process:", error)
       }
     },
+    sendMessageToPython,
   }
 }
 

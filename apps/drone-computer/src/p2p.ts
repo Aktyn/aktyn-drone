@@ -10,6 +10,7 @@ type MessageListener = (message: Message, conn: DataConnection) => void
 
 type EventMap = {
   message: Parameters<MessageListener>
+  "ping-timeout": []
   disconnect: []
 }
 
@@ -39,12 +40,16 @@ export class Connection extends EventEmitter<EventMap> {
   }
 
   private connections: DataConnection[] = []
+  private nextPingAwaiters = new Map<
+    string,
+    ReturnType<typeof setTimeout> | null
+  >()
 
   public static hasConnections() {
     return !!this.instance?.connections.length
   }
 
-  private constructor(private readonly peerId: string) {
+  private constructor(readonly peerId: string) {
     super()
 
     const peer = new Peer(peerId)
@@ -81,16 +86,17 @@ export class Connection extends EventEmitter<EventMap> {
     logger.log("Establishing connection with peer:", conn.peer)
     conn.on("open", () => {
       this.connections.push(conn)
+      this.nextPingAwaiters.set(conn.connectionId, null)
       logger.log("Connected to peer:", conn.peer)
     })
 
     conn.on("close", () => {
       logger.log("Connection closed")
       this.connections = this.connections.filter((c) => c !== conn)
+      this.nextPingAwaiters.delete(conn.connectionId)
       this.emit("disconnect")
     })
 
-    //TODO: implement ping-pong and initiate safety measures after connection is lost for over N seconds
     conn.on("data", (data) => {
       if (typeof data === "object" && data !== null) {
         this.handleMessage(data, conn)
@@ -114,16 +120,31 @@ export class Connection extends EventEmitter<EventMap> {
         logger.warn("Unhandled message", message)
         break
       case MessageType.PING:
-        Connection.broadcast(
-          {
-            type: MessageType.PONG,
-            data: { pingId: message.data.id },
-          },
-          [conn],
-        )
+        {
+          const currentAwaiter = this.nextPingAwaiters.get(conn.connectionId)
+          if (currentAwaiter) {
+            clearTimeout(currentAwaiter)
+          }
+          this.nextPingAwaiters.set(
+            conn.connectionId,
+            setTimeout(() => {
+              logger.warn("Time between successive pings is too long.")
+              this.nextPingAwaiters.set(conn.connectionId, null)
+              this.emit("ping-timeout")
+            }, 30_000),
+          )
+
+          Connection.broadcast(
+            {
+              type: MessageType.PONG,
+              data: { pingId: message.data.id },
+            },
+            [conn],
+          )
+        }
         break
       case MessageType.REQUEST_TODAY_LOGS:
-        Connection.broadcast(
+        Connection.broadcastChunked(
           {
             type: MessageType.TODAY_LOGS,
             data: { todayLogsFileContent: getTodayLogs() },
