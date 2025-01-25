@@ -93,7 +93,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
             },
             [conn],
           )
-        }, 50_000)
+        }, 5_000)
       })
 
       conn.on("close", () => {
