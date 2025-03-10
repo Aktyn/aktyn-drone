@@ -9,7 +9,10 @@ from enum import IntEnum
 import asyncio
 import sys
 import select
+import subprocess
 
+subprocess.run(["sudo", "chmod", "777", "/dev/serial0"])
+subprocess.run(["sudo", "chown", "pi:pi", "/dev/serial0"])
 
 def rad2deg(rad):
     return rad * 180.0 / math.pi
@@ -122,8 +125,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "-P",
     "--port",
-    # default="/dev/serial0", # raspberry pi zero 2 and probably others
-    default="/dev/ttyAMA0", # raspberry pi 5
+    default="/dev/serial0", # raspberry pi zero 2 and probably others
+    # default="/dev/ttyAMA0", # raspberry pi 5
     required=False,
     help="Serial port to read from",
 )
