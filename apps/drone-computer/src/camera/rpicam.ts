@@ -15,7 +15,7 @@ export function startCamera(
 ) {
   try {
     execSync(`pkill -f ${executable}`)
-    logger.warn("Killed existing rpicam-vid processes")
+    logger.warn(`Killed existing ${executable} processes`)
   } catch (error) {
     // noop
   }

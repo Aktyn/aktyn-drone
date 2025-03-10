@@ -131,7 +131,7 @@ export class Connection extends EventEmitter<EventMap> {
               logger.warn("Time between successive pings is too long.")
               this.nextPingAwaiters.set(conn.connectionId, null)
               this.emit("ping-timeout")
-            }, 30_000),
+            }, 300_000),
           )
 
           Connection.broadcast(
