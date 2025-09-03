@@ -2,7 +2,6 @@
   "name": "aktyn-drone",
   "version": "2.1.0",
   "private": true,
-  "packageManager": "yarn@4.5.3",
   "description": "Raspberry Pi to flight controller interface with p2p-based connectivity, web controls, and real-time camera stream preview",
   "author": "Radosław Krajewski (Aktyn)",
   "license": "GPL-3.0-only",
@@ -18,13 +17,13 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "yarn workspaces foreach --all --topological run build",
-    "start": "yarn workspaces foreach --all --parallel --interlaced run start",
-    "start:drone-computer": "yarn workspace @aktyn-drone/drone-computer start",
-    "dev": "yarn workspaces foreach --all --parallel --interlaced run dev",
-    "dev:drone-computer": "yarn workspace @aktyn-drone/drone-computer dev",
-    "typecheck": "yarn workspaces foreach --all run typecheck",
-    "lint": "yarn workspaces foreach --all run lint",
-    "format": "yarn workspaces foreach --all run format"
+    "build": "npm run build --workspaces --if-present",
+    "start": "npm run start --workspaces --if-present",
+    "start:drone-computer": "npm run start --workspace=@aktyn-drone/drone-computer",
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:drone-computer": "npm run dev --workspace=@aktyn-drone/drone-computer",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "npm run format --workspaces --if-present"
   }
 }
