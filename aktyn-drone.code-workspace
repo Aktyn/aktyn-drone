@@ -40,12 +40,15 @@
       "rpicam",
       "rssi",
       "rtsp",
+      "shadcn",
       "tseslint",
       "UART",
       "vario",
       "venv"
     ],
     "betterOpenEditors.PackagePatterns": "**/drone-computer\n**/mobile-pilot\n**/common",
-    "typescript.tsdk": "Drone computer/node_modules/typescript/lib"
+    "typescript.tsdk": "Root/node_modules/typescript/lib",
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "npm.packageManager": "npm"
   }
 }

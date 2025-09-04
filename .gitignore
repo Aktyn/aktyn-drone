@@ -4,13 +4,9 @@ node_modules/
 dist/
 .env
 .directory
+.turbo/
 
 *.tsbuildinfo
-
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
 
 .Trash-1000/
 myenv/

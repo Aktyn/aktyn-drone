@@ -1,22 +1,24 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "CommonJS",
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true,
     "outDir": "dist",
+    "rootDir": "src",
     "types": [
       "./types/peerjs.d.ts"
     ],
+    "esModuleInterop": true,
     "experimentalDecorators": true
   },
   "include": [
     "src/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist"
+  ],
+  "references": [
+    {
+      "path": "../../packages/common"
+    }
   ]
 }

@@ -17,13 +17,20 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
-    "start": "npm run start --workspaces --if-present",
-    "start:drone-computer": "npm run start --workspace=@aktyn-drone/drone-computer",
-    "dev": "npm run dev --workspaces --if-present",
-    "dev:drone-computer": "npm run dev --workspace=@aktyn-drone/drone-computer",
-    "typecheck": "npm run typecheck --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "format": "npm run format --workspaces --if-present"
-  }
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "start": "turbo run start",
+    "test": "turbo run test",
+    "test:coverage": "turbo run test:coverage",
+    "test:watch": "turbo run test:watch",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx}\""
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.10",
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.6"
+  },
+  "packageManager": "npm@10.9.3"
 }

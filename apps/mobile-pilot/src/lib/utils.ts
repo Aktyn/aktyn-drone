@@ -14,7 +14,7 @@ export function base64ToUint8Array(base64: string) {
       bytes[i] = binaryString.charCodeAt(i)
     }
     return bytes
-  } catch (error) {
+  } catch {
     return null
   }
 }

@@ -3,7 +3,7 @@ import { EventEmitter } from "events"
 import type { DataConnection, Peer as PeerJS } from "../types/peerjs"
 import { getTodayLogs, logger } from "./logger"
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const Peer = require("peerjs-on-node").Peer as typeof PeerJS
 
 type MessageListener = (message: Message, conn: DataConnection) => void
@@ -97,7 +97,7 @@ export class Connection extends EventEmitter<EventMap> {
       this.emit("disconnect")
     })
 
-    conn.on("data", (data) => {
+    conn.on("data", (data: Message) => {
       if (typeof data === "object" && data !== null) {
         this.handleMessage(data, conn)
       } else if (typeof data === "string") {

@@ -16,7 +16,7 @@ export function startCamera(
   try {
     execSync(`pkill -f ${executable}`)
     logger.warn(`Killed existing ${executable} processes`)
-  } catch (error) {
+  } catch {
     // noop
   }
 

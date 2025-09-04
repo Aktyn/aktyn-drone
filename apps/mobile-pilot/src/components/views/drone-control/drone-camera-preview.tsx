@@ -119,7 +119,7 @@ export const DroneCameraPreview = memo<DroneCameraPreviewProps>(
           {
             const uint8Array = base64ToUint8Array(message.data.base64)
             if (uint8Array && p2pPlayerRef.current) {
-              p2pPlayerRef.current.source.onMessage({ data: uint8Array })
+              p2pPlayerRef.current.source.onMessage({ data: uint8Array.buffer })
             }
           }
           break

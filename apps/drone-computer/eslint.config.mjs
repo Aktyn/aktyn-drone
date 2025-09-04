@@ -1,13 +1,14 @@
 import js from "@eslint/js"
 import globals from "globals"
+import { defineConfig } from 'eslint/config';
 import tseslint from "typescript-eslint"
 import prettier from "eslint-plugin-prettier"
 import eslintConfigPrettier from "eslint-config-prettier"
 import importPlugin from "eslint-plugin-import"
 import typescriptEslint from "typescript-eslint"
 
-export default tseslint.config(
-  { ignores: ["dist", "node_modules", "prisma"] },
+export default defineConfig(
+  { ignores: ["dist", "node_modules"] },
   {
     extends: [
       js.configs.recommended,
@@ -22,6 +23,7 @@ export default tseslint.config(
       parserOptions: {
         project: "tsconfig.json",
         sourceType: "module",
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     plugins: {
