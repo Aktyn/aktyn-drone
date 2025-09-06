@@ -1,6 +1,6 @@
 import { type LogMessageData, stringifyLogArguments } from "@aktyn-drone/common"
 import { Eraser } from "lucide-react"
-import { memo, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { Button } from "~/components/ui/button"
 import { ScrollArea } from "~/components/ui/scroll-area"
 import { Separator } from "~/components/ui/separator"
@@ -11,13 +11,13 @@ type LogsPanel = {
   onClear: () => void
 }
 
-export const LogsPanel = memo(({ logs, onClear }: LogsPanel) => {
+export function LogsPanel({ logs, onClear }: LogsPanel) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const lastLogEntry = containerRef.current?.querySelector(".last-log-entry")
     if (lastLogEntry) {
-      lastLogEntry.scrollIntoView({ behavior: "smooth" })
+      lastLogEntry.scrollIntoView({ behavior: "instant" })
     }
   }, [logs])
 
@@ -65,6 +65,4 @@ export const LogsPanel = memo(({ logs, onClear }: LogsPanel) => {
       </Button>
     </div>
   )
-})
-
-LogsPanel.displayName = "Logs"
+}

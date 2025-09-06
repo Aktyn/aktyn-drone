@@ -1,44 +1,22 @@
-import L, { type LatLngExpression } from "leaflet"
-import { Crosshair, TriangleAlert } from "lucide-react"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { MapContainer, Marker, TileLayer } from "react-leaflet"
-import { type MapRef } from "react-leaflet/MapContainer"
-import { Button } from "~/components/ui/button"
-import { DroneCameraPreview } from "../drone-camera-preview"
-
-import { MessageType } from "@aktyn-drone/common"
-import "leaflet/dist/leaflet.css"
+import L from "leaflet"
+import { useMemo } from "react"
 import {
-  useConnection,
-  useConnectionMessageHandler,
-} from "~/providers/connection-provider"
-import { cn } from "~/lib/utils"
+  MapContainer,
+  Marker,
+  TileLayer,
+  type MapContainerProps,
+} from "react-leaflet"
+import type { MapRef } from "react-leaflet/MapContainer"
 
-const defaultZoom = 17
+export const DEFAULT_ZOOM = 17
 
-interface MapProps {
-  latitude: number
-  longitude: number
-  satellites: number
+type MapProps = {
+  homePoint?: { latitude: number; longitude: number } | null
   heading: number
-}
+} & MapContainerProps &
+  React.RefAttributes<MapRef | null>
 
-export function Map({
-  latitude,
-  longitude,
-  satellites,
-  heading = 0,
-}: MapProps) {
-  const { send } = useConnection()
-
-  const mapRef = useRef<MapRef>(null)
-  const position: LatLngExpression = [latitude, longitude]
-
-  const [homePoint, setHomePoint] = useState<{
-    latitude: number
-    longitude: number
-  } | null>(null)
-
+export function Map({ homePoint, heading, ...mapContainerProps }: MapProps) {
   const homePointIcon = useMemo(
     () =>
       L.divIcon({
@@ -61,89 +39,26 @@ export function Map({
     [heading],
   )
 
-  useEffect(() => {
-    send({
-      type: MessageType.REQUEST_HOME_POINT,
-      data: {},
-    })
-  }, [send])
-
-  useConnectionMessageHandler((message) => {
-    switch (message.type) {
-      case MessageType.HOME_POINT_COORDINATES:
-        setHomePoint(message.data)
-        break
-    }
-  })
-
-  const centerAt = useCallback((position: LatLngExpression) => {
-    mapRef.current?.setView(
-      position,
-      mapRef.current?.getZoom() ?? defaultZoom,
-      {
-        animate: true,
-        duration: 0.4,
-      },
-    )
-  }, [])
-
   return (
-    <div className="flex-grow flex flex-col first:*:flex-grow first:*:h-full first:*:w-full animate-in fade-in relative">
-      <MapContainer
-        ref={mapRef}
-        className="z-0"
-        center={position}
-        zoom={defaultZoom}
-        scrollWheelZoom={false}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {homePoint && (
-          <Marker
-            position={[homePoint.latitude, homePoint.longitude]}
-            icon={homePointIcon}
-          />
-        )}
-        <Marker position={position} icon={droneIcon} />
-      </MapContainer>
-      <DroneCameraPreview
-        className="absolute top-0 right-0 rounded-none rounded-bl-lg z-10 h-64 max-h-[50%] hover:opacity-25 transition-opacity"
-        hideNoPreviewInfo
+    <MapContainer {...mapContainerProps}>
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <div className="absolute bottom-2 right-2 flex flex-col gap-y-2 [&>button]:bg-background/50 [&>button]:backdrop-blur-md bg-background/50 backdrop-blur-md rounded-lg p-4 border">
-        <div className="flex flex-row items-center text-lg text-foreground [text-shadow:0_0_2px_var(--background)] whitespace-nowrap">
-          Satellites:&nbsp;<strong>{satellites}</strong>&nbsp;
-          <span
-            className={cn(
-              "bg-orange-500 p-2 rounded-full inline-flex items-center justify-center transition-opacity",
-              satellites < 3 ? "opacity-100" : "opacity-0",
-            )}
-          >
-            <TriangleAlert className="inline align-middle text-orange-100" />
-          </span>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => centerAt(position)}>
-          <Crosshair />
-          Center on drone
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={!homePoint}
-          onClick={() => {
-            if (!homePoint) {
-              return
-            }
-            centerAt([homePoint.latitude, homePoint.longitude])
-          }}
-        >
-          <Crosshair />
-          Center on home point
-        </Button>
-      </div>
-    </div>
+      {homePoint && (
+        <Marker
+          position={[homePoint.latitude, homePoint.longitude]}
+          icon={homePointIcon}
+        />
+      )}
+      {mapContainerProps.center && (
+        <Marker
+          position={mapContainerProps.center}
+          icon={droneIcon}
+          zIndexOffset={1}
+        />
+      )}
+    </MapContainer>
   )
 }
 

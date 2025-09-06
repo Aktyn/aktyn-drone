@@ -18,7 +18,7 @@ import { Button, type ButtonProps } from "../../ui/button"
 import { ControlPanel } from "./control-panel/control-panel"
 import { DroneCameraPreview } from "./drone-camera-preview"
 import { LogsPanel } from "./logs-panel/logs-panel"
-import { Map } from "./map/map"
+import { MapView } from "./map/map-view"
 import { SettingsMenu } from "./settings-menu"
 import { Stats } from "./stats"
 
@@ -158,15 +158,19 @@ export const DroneControl = memo(() => {
 
   return (
     <div className="flex-grow flex flex-col w-full max-h-dvh overflow-hidden">
-      <div
-        className={cn(
-          "flex flex-wrap-reverse gap-y-1 items-center justify-between py-2 animate-in slide-in-from-top z-10 transition-colors",
-          maximizeCameraPreview && "bg-background/50 backdrop-blur-sm",
-        )}
-      >
-        <Stats className="px-2" telemetry={telemetry} />
-        <Navigation view={view} setView={setView} />
-      </div>
+      <ScrollArea className="w-full py-1 animate-in slide-in-from-top z-10 overflow-visible">
+        <div
+          className={cn(
+            "flex gap-y-1 items-center justify-between transition-colors",
+            maximizeCameraPreview && "bg-background/50 backdrop-blur-sm",
+          )}
+        >
+          <Stats className="px-2" telemetry={telemetry} />
+          <Separator className="h-8 lg:hidden mx-1" orientation="vertical" />
+          <Navigation view={view} setView={setView} />
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
       <div className="flex-grow flex flex-col overflow-hidden">
         {view === View.DRONE_CONTROL && (
           <ControlPanel
@@ -174,6 +178,11 @@ export const DroneControl = memo(() => {
             roll={telemetry.roll}
             yaw={telemetry.yaw}
             onPreviewMaximizedChange={setMaximizeCameraPreview}
+            latitude={telemetry.latitude ?? 0}
+            longitude={telemetry.longitude ?? 0}
+            heading={
+              (telemetry.heading === -Infinity ? 0 : telemetry.heading) ?? 0
+            }
           />
         )}
         {view === View.MAP &&
@@ -182,7 +191,7 @@ export const DroneControl = memo(() => {
           typeof telemetry.longitude === "number" &&
           typeof telemetry.satellites === "number" &&
           typeof telemetry.heading === "number" ? (
-            <Map
+            <MapView
               latitude={telemetry.latitude}
               longitude={telemetry.longitude}
               satellites={telemetry.satellites}

@@ -43,7 +43,7 @@ export const Stats = memo<StatsProps>(({ className, telemetry }) => {
                 ? "text-yellow-400"
                 : "text-red-400 animate-pulse",
           )}
-          label="Battery:"
+          label={<span className="max-lg:hidden">Battery:</span>}
           value={new Intl.NumberFormat(undefined, { style: "percent" }).format(
             batteryLevel,
           )}
@@ -60,7 +60,7 @@ export const Stats = memo<StatsProps>(({ className, telemetry }) => {
           }
         />
         <StatsItem
-          label="Speed:"
+          label={<span className="max-lg:hidden">Speed:</span>}
           value={
             formatDecimal(cmPerSecondToKmPerHour(telemetry.groundSpeed)) +
             " km/h"
@@ -124,9 +124,9 @@ export const Stats = memo<StatsProps>(({ className, telemetry }) => {
             <StatsItem
               className={cn(
                 (telemetry.satellites ?? 0) >= 5
-                  ? "last:*:text-green-400"
+                  ? "*:last:text-green-400"
                   : (telemetry.satellites ?? 0) >= 3
-                    ? "last:*:text-yellow-400"
+                    ? "*:last:text-yellow-400"
                     : "text-red-400 animate-pulse",
               )}
               label="Satellites:"
@@ -139,8 +139,8 @@ export const Stats = memo<StatsProps>(({ className, telemetry }) => {
                 telemetry.rpiTemperature > 70
                   ? "text-red-400"
                   : telemetry.rpiTemperature > 50
-                    ? "last:*:text-yellow-400"
-                    : "last:*:text-green-400",
+                    ? "*:last:text-yellow-400"
+                    : "*:last:text-green-400",
               )}
               label="RPi Temperature:"
               value={formatDecimal(telemetry.rpiTemperature, 2) + "°C"}
@@ -165,7 +165,7 @@ function formatDecimal(value: number, maximumFractionDigits = 0) {
 
 type StatsItemProps = {
   icon?: ReactNode
-  label: string
+  label: ReactNode
   value: ReactNode
   className?: string
 }

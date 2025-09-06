@@ -49,7 +49,7 @@ export type Message =
         args: unknown[]
       }
     >
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   | MessageBase<MessageType.REQUEST_TODAY_LOGS, {}>
   | MessageBase<MessageType.TODAY_LOGS, { todayLogsFileContent: string }>
   | MessageBase<
@@ -60,7 +60,7 @@ export type Message =
         framerate: number
       }
     >
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   | MessageBase<MessageType.CLOSE_CAMERA_STREAM, {}>
   | MessageBase<
       MessageType.CAMERA_DATA,
@@ -69,19 +69,27 @@ export type Message =
       }
     >
   | MessageBase<MessageType.TELEMETRY_UPDATE, TelemetryData>
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   | MessageBase<MessageType.REQUEST_TELEMETRY, {}>
   | MessageBase<MessageType.TELEMETRY_FULL, TelemetryDataFull>
-  | MessageBase<MessageType.SET_THROTTLE, { throttle: number }>
+  | MessageBase<
+      MessageType.SET_THROTTLE,
+      {
+        /** Percentage value, 0 to 100 */
+        throttle: number
+      }
+    >
   | MessageBase<
       MessageType.SEND_EULER_ANGLES,
       { yaw: number; pitch: number; roll: number }
     >
-  | MessageBase<MessageType.SET_AUX, { auxIndex: number; value: number }>
-  | MessageBase<MessageType.AUX_VALUE, { auxIndex: number; value: number }>
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  | MessageBase<MessageType.SET_AUX, { auxIndex: AuxIndex; value: number }>
+  | MessageBase<MessageType.AUX_VALUE, { auxIndex: AuxIndex; value: number }>
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   | MessageBase<MessageType.REQUEST_HOME_POINT, {}>
   | MessageBase<
       MessageType.HOME_POINT_COORDINATES,
       { latitude: number; longitude: number }
     >
+
+export type AuxIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11

@@ -29,12 +29,9 @@
   --default-transition-duration: 300ms;
   --default-transition-timing-function: ease-in-out;
 
-  --color-background-lighter: hsl(var(--background-lighter));
   --color-background: hsl(var(--background));
-  --color-background-darker: hsl(var(--background-darker));
 
   --color-foreground: hsl(var(--foreground));
-  --color-foreground-lighter: hsl(var(--foreground-lighter));
 
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
@@ -54,7 +51,7 @@
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
 
-  --color-destructive: hsl(var(--destructive));
+  --color-destructive: oklch(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
 
   /* --color-warning: hsl(var(--warning));
@@ -128,7 +125,7 @@
     --accent: 212 40% 20.7%;
     --accent-foreground: 212 8% 98.45%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 70.4% 0.191 22.216;
     --destructive-foreground: 212 8% 98.45%;
 
     --ring: 212 80% 69%;
@@ -141,5 +138,9 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  button:not([disabled]) {
+    cursor: pointer;
   }
 }

@@ -1,4 +1,7 @@
 import {
+  type AltitudeTelemetryData,
+  type BatteryTelemetryData,
+  type GpsTelemetryData,
   MessageType,
   type TelemetryData,
   type TelemetryDataFull,
@@ -12,6 +15,37 @@ type TelemetryComparatorState = {
   [K in keyof TelemetryDataFull]: { value: number; tolerance: number }
 }
 
+export enum TelemetryDataType {
+  ERROR = "ERROR",
+  INFO = "INFO",
+  ATTITUDE = "ATTITUDE",
+  BATTERY = "BATTERY",
+  GPS = "GPS",
+  VARIO = "VARIO",
+  BARO_ALTITUDE = "BARO_ALTITUDE",
+  LINK_STATISTICS = "LINK_STATISTICS",
+}
+
+export type TelemetryUpdateData =
+  | {
+      type: TelemetryDataType.ERROR | TelemetryDataType.INFO
+      message: string
+    }
+  | ({
+      type: TelemetryDataType.ATTITUDE
+    } & AltitudeTelemetryData)
+  | ({
+      type: TelemetryDataType.BATTERY
+    } & BatteryTelemetryData)
+  | ({
+      type: TelemetryDataType.GPS
+    } & GpsTelemetryData)
+  | {
+      type:
+        | TelemetryDataType.VARIO
+        | TelemetryDataType.BARO_ALTITUDE
+        | TelemetryDataType.LINK_STATISTICS
+    }
 export class Telemetry {
   private readonly comparatorState = {
     pitch: { value: -Infinity, tolerance: 0.01 },
@@ -31,19 +65,18 @@ export class Telemetry {
     longitude: number
   } | null = null
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  update(data: Record<string, any>) {
+  update(data: TelemetryUpdateData) {
     switch (data.type) {
       default:
         logger.warn("Unhandled message:", JSON.stringify(data))
         break
-      case "ERROR":
+      case TelemetryDataType.ERROR:
         logger.error("Python script error:", data.message)
         break
-      case "INFO":
+      case TelemetryDataType.INFO:
         logger.info("Python script info:", data.message)
         break
-      case "ATTITUDE":
+      case TelemetryDataType.ATTITUDE:
         this.synchronizeTelemetry({
           type: TelemetryType.ATTITUDE,
           pitch: data.pitch,
@@ -51,13 +84,13 @@ export class Telemetry {
           yaw: data.yaw,
         })
         break
-      case "BATTERY":
+      case TelemetryDataType.BATTERY:
         this.synchronizeTelemetry({
           type: TelemetryType.BATTERY,
           percentage: data.percentage,
         })
         break
-      case "GPS":
+      case TelemetryDataType.GPS:
         this.synchronizeTelemetry({
           type: TelemetryType.GPS,
           latitude: data.latitude,
@@ -68,35 +101,11 @@ export class Telemetry {
           satellites: data.satellites,
         })
         break
-      case "VARIO":
-      case "BARO_ALTITUDE":
-      case "LINK_STATISTICS":
+      case TelemetryDataType.VARIO:
+      case TelemetryDataType.BARO_ALTITUDE:
+      case TelemetryDataType.LINK_STATISTICS:
         logger.warn("Unsupported message type:", data.type)
         break
-      // case "VARIO":
-      //   return {
-      //     type: "vario",
-      //     value: {
-      //       verticalSpeed: data.verticalSpeed, // meters per second
-      //     },
-      //   }
-      // case "BARO_ALTITUDE":
-      //   return {
-      //     type: "baroAltitude",
-      //     value: {
-      //       altitude: data.altitude, // meters
-      //     },
-      //   }
-      // case "LINK_STATISTICS":
-      //   return {
-      //     type: "linkStatistics",
-      //     value: {
-      //       rssi1: data.rssi1,
-      //       rssi2: data.rssi2,
-      //       linkQuality: data.linkQuality,
-      //       snr: data.snr,
-      //     },
-      //   }
     }
   }
 

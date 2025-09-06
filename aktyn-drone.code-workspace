@@ -20,6 +20,7 @@
   "settings": {
     "cSpell.words": [
       "Aktyn",
+      "BARO",
       "Crsf",
       "denoise",
       "denoland",
@@ -31,7 +32,9 @@
       "MJPEG",
       "myenv",
       "nopreview",
+      "oklch",
       "peerjs",
+      "Phong",
       "pkill",
       "probesize",
       "PYTHONUNBUFFERED",
@@ -43,6 +46,7 @@
       "shadcn",
       "tseslint",
       "UART",
+      "uuidv",
       "vario",
       "venv"
     ],

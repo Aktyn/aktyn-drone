@@ -1,12 +1,17 @@
-type AltitudeTelemetryData = {
+export type AltitudeTelemetryData = {
+  /** radians */
   pitch: number
+
+  /** radians */
   roll: number
+
+  /** radians */
   yaw: number
 }
-type BatteryTelemetryData = {
+export type BatteryTelemetryData = {
   percentage: number
 }
-type GpsTelemetryData = {
+export type GpsTelemetryData = {
   latitude: number
   longitude: number
   /** cm/s */

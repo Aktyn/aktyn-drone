@@ -1,14 +1,50 @@
-import { type Message, MessageType, TelemetryType } from "@aktyn-drone/common"
+import {
+  type AuxIndex,
+  type Message,
+  MessageType,
+  TelemetryType,
+} from "@aktyn-drone/common"
 import { type ChildProcessWithoutNullStreams, spawn } from "child_process"
 import path from "path"
 import type { DataConnection } from "../../types/peerjs"
 import { logger } from "../logger"
 import { Connection } from "../p2p"
+import { MockedPythonScriptProcess } from "./python-script-process.mock"
 import { Telemetry } from "./telemetry"
 import { getRpiTemperature } from "./temperature-monitor"
 
+export type PythonScriptMessage =
+  | {
+      type: "set-throttle"
+      value: {
+        /** Normalized throttle value */
+        throttle: number
+      }
+    }
+  | {
+      type: "set-aux"
+      value: {
+        index: AuxIndex
+        /** Normalized aux value */
+        value: number
+      }
+    }
+  | {
+      type: "euler-angles"
+      value: {
+        /** Normalized yaw value */
+        yaw: number
+        /** Normalized pitch value */
+        pitch: number
+        /** Normalized roll value */
+        roll: number
+      }
+    }
+
 export function initFlightControllerModule() {
-  logger.info("Initializing flight controller module")
+  const mock = process.env.MOCK_FLIGHT_CONTROLLER === "true"
+
+  logger.info(`Initializing${mock ? " mocked" : ""} flight controller module`)
 
   const telemetry = new Telemetry()
 
@@ -22,13 +58,17 @@ export function initFlightControllerModule() {
   let pythonScriptProcess: ChildProcessWithoutNullStreams | null = null
 
   const start = () => {
-    pythonScriptProcess = startPythonScript(telemetry, () => {
-      setTimeout(start, 5000)
-    })
+    pythonScriptProcess = startPythonScript(
+      telemetry,
+      () => {
+        setTimeout(start, 5000)
+      },
+      mock,
+    )
   }
   start()
 
-  const sendMessageToPython = (data: object) => {
+  const sendMessageToPython = (data: PythonScriptMessage) => {
     try {
       const io = pythonScriptProcess?.stdin
       if (!io || !io.writable) {
@@ -116,14 +156,14 @@ export function initFlightControllerModule() {
 function startPythonScript(
   telemetry: Telemetry,
   onClose: (code: number | null) => void,
+  mock: boolean,
 ) {
-  const pythonProcess = spawn(
-    path.join(__dirname, "..", "..", "scripts", "main.py"),
-    {
-      stdio: ["pipe", "pipe", "pipe"],
-      env: { ...process.env, PYTHONUNBUFFERED: "1" },
-    },
-  )
+  const pythonProcess = mock
+    ? new MockedPythonScriptProcess()
+    : spawn(path.join(__dirname, "..", "..", "scripts", "main.py"), {
+        stdio: ["pipe", "pipe", "pipe"],
+        env: { ...process.env, PYTHONUNBUFFERED: "1" },
+      })
 
   pythonProcess.stdout.on("data", (data) => {
     try {

@@ -272,7 +272,7 @@ async def handle_stdin(controller):
                             RCChannels.THROTTLE,
                             factor_to_stick_value(message["value"]["throttle"]),
                         )
-                if message["type"] == "euler-angles":
+                elif message["type"] == "euler-angles":
                     if "yaw" in message["value"]:
                         controller.set_channel(
                             RCChannels.YAW,

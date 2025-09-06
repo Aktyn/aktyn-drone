@@ -35,7 +35,7 @@ export class Connection extends EventEmitter<EventMap> {
   ) => this
 
   public static init(peerId: string) {
-    logger.log("Initializing connection with peer id:", peerId)
+    logger.log("Initializing connection using peer id:", peerId)
     this.instance = new Connection(peerId)
   }
 
@@ -128,6 +128,7 @@ export class Connection extends EventEmitter<EventMap> {
           this.nextPingAwaiters.set(
             conn.connectionId,
             setTimeout(() => {
+              //TODO: fix the issue that occurs after mobile-pilot reconnects with the drone
               logger.warn("Time between successive pings is too long.")
               this.nextPingAwaiters.set(conn.connectionId, null)
               this.emit("ping-timeout")

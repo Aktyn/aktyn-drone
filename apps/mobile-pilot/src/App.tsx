@@ -4,9 +4,33 @@ import { Menu } from "~/components/views/menu/menu"
 import { useConnection } from "~/providers/connection-provider.tsx"
 import { cn } from "./lib/utils"
 import { Button } from "./components/ui/button"
+import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert"
+import { useEffect, useState } from "react"
 
 function App() {
-  const { isConnected, unstableConnection, disconnect } = useConnection()
+  const { isConnected, unstableConnection, disconnect, reconnect } =
+    useConnection()
+
+  const [secondsToReconnect, setSecondsToReconnect] = useState(0)
+
+  useEffect(() => {
+    if (!isConnected && unstableConnection) {
+      let seconds = 30
+      setSecondsToReconnect(seconds)
+      const interval = setInterval(() => {
+        seconds -= 1
+        setSecondsToReconnect(seconds)
+        if (seconds <= 0) {
+          reconnect().catch(console.error)
+          clearInterval(interval)
+        }
+      }, 1000)
+
+      return () => clearInterval(interval)
+    } else {
+      setSecondsToReconnect(0)
+    }
+  }, [isConnected, reconnect, unstableConnection])
 
   return (
     <div className="min-h-dvh relative overflow-hidden *:z-[3] flex flex-col justify-center items-center">
@@ -32,29 +56,36 @@ function App() {
         }}
       />
       {isConnected ? <DroneControl /> : <Menu />}
-      <div
+      <Alert
         className={cn(
-          "absolute bottom-2 right-2 flex flex-col gap-y-2 rounded-lg overflow-hidden bg-orange-400/20 text-orange-100 border border-orange-400 *:[text-shadow:0_0_2px_#000] backdrop-blur-sm text-sm font-semibold transition-transform",
+          "absolute bottom-2 right-2 w-auto border-orange-400/50 bg-orange-400/10 text-orange-400 [&>svg]:text-orange-400 backdrop-blur-md transition-transform",
           isConnected && unstableConnection
             ? "translate-x-0 pointer-events-auto"
             : "translate-x-64 pointer-events-none",
         )}
       >
-        <div className="flex items-center gap-x-2 p-3 pb-0">
-          <ServerCrash className="size-5" />
-          <span>Unstable connection</span>
-        </div>
-        <Button
-          className="hover:bg-destructive hover:text-destructive-foreground rounded-none"
-          variant="ghost"
-          size="default"
-          disabled={!isConnected}
-          onClick={disconnect}
-        >
-          <Unplug />
-          <span>Disconnect</span>
-        </Button>
-      </div>
+        <ServerCrash className="size-5" />
+        <AlertTitle className="font-semibold">Unstable connection</AlertTitle>
+        <AlertDescription className="flex flex-col gap-2">
+          {secondsToReconnect > 0 ? (
+            <span className="text-orange-400/60">
+              Reconnect attempt in {secondsToReconnect} seconds...
+            </span>
+          ) : (
+            <span>Reconnecting...</span>
+          )}
+          <Button
+            className="hover:bg-destructive hover:border-destructive-foreground hover:text-destructive-foreground border-orange-400/50 bg-orange-400/10"
+            variant="outline"
+            size="default"
+            disabled={!isConnected}
+            onClick={disconnect}
+          >
+            <Unplug />
+            <span>Disconnect</span>
+          </Button>
+        </AlertDescription>
+      </Alert>
     </div>
   )
 }

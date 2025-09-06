@@ -1,9 +1,9 @@
-import { RadioTower, Settings2 } from "lucide-react"
+import { AlertCircle, RadioTower, Settings2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import { FullscreenToggle } from "~/components/common/fullscreen-toggle"
-import { Button } from "~/components/ui/button.tsx"
+import { Button } from "~/components/ui/button"
 import { Checkbox } from "~/components/ui/checkbox"
-import { Input } from "~/components/ui/input.tsx"
+import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import {
   Popover,
@@ -12,9 +12,10 @@ import {
 } from "~/components/ui/popover"
 import { Separator } from "~/components/ui/separator"
 import { LAST_CONNECTED_PEER_ID_KEY } from "~/lib/consts"
-import { useConnection } from "~/providers/connection-provider.tsx"
+import { useConnection } from "~/providers/connection-provider"
 import { Footer } from "./footer"
 import { TurnServerForm } from "./turn-server-form"
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert"
 
 export function Menu() {
   const {
@@ -84,10 +85,18 @@ export function Menu() {
           {connecting ? "Connecting..." : "Connect"}
         </Button>
         {peerError && (
-          <div className="text-base text-red-400 flex flex-col items-center animate-in slide-in-from-bottom">
-            <strong>Error: {peerError.type}</strong>
-            <div>{peerError.message}</div>
-          </div>
+          <Alert
+            variant="destructive"
+            className="animate-in slide-in-from-bottom *:not-[svg]:ml-2 bg-destructive/10 backdrop-blur-md"
+          >
+            <AlertCircle />
+            <AlertTitle className="font-semibold">
+              Error: {peerError.type}
+            </AlertTitle>
+            <AlertDescription className="text-balance">
+              {peerError.message}
+            </AlertDescription>
+          </Alert>
         )}
         <Separator />
         <div className="text-lg font-semibold text-center text-muted-foreground">

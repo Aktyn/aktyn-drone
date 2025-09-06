@@ -1,8 +1,6 @@
-import { ZoomIn, ZoomOut } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js"
-import { Button } from "~/components/ui/button"
 import { cn } from "~/lib/utils"
 //@ts-expect-error importing asset file
 import quadcopterStl from "~/assets/quadcopter.stl"
@@ -11,24 +9,27 @@ export type DroneOrientationWidgetProps = {
   pitch: number
   roll: number
   yaw: number
+  className?: string
+  size?: "sm" | "md" | "lg"
 }
 
 export function DroneOrientationWidget({
   pitch,
   roll,
   yaw,
+  className,
+  size = "sm",
 }: DroneOrientationWidgetProps) {
   const canvasContainerRef = useRef<HTMLDivElement>(null)
 
   const [mesh, setMesh] = useState<THREE.Mesh | null>(null)
-  const [size, setSize] = useState(1)
 
   useEffect(() => {
     if (!mesh) {
       return
     }
 
-    mesh.rotation.set(pitch, roll, yaw)
+    mesh.rotation.set(pitch, roll, -yaw)
   }, [mesh, pitch, roll, yaw])
 
   useEffect(() => {
@@ -142,34 +143,15 @@ export function DroneOrientationWidget({
   }, [])
 
   return (
-    <div className="relative overflow-hidden [&:hover>:nth-child(2)]:translate-y-0">
-      <div
-        ref={canvasContainerRef}
-        className={cn(
-          "aspect-square w-auto max-h-[50dvh] mx-auto overflow-hidden",
-          size === 1 && "h-32",
-          size === 2 && "h-64",
-          size === 3 && "h-96",
-        )}
-      />
-      <div className="absolute bottom-0 w-full flex items-stretch *:flex-1 transition-transform translate-y-full">
-        <Button
-          variant="ghost"
-          size="icon"
-          disabled={size >= 3}
-          onClick={() => setSize(size + 1)}
-        >
-          <ZoomIn />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          disabled={size <= 1}
-          onClick={() => setSize(size - 1)}
-        >
-          <ZoomOut />
-        </Button>
-      </div>
-    </div>
+    <div
+      ref={canvasContainerRef}
+      className={cn(
+        "aspect-square w-auto max-h-[50dvh] mx-auto overflow-hidden",
+        size === "sm" && "h-32",
+        size === "md" && "h-64",
+        size === "lg" && "h-96",
+        className,
+      )}
+    />
   )
 }

@@ -19,6 +19,7 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:mock": "env MOCK_GPS=true MOCK_FLIGHT_CONTROLLER=true MOCK_RPICAM_VID=true turbo run dev",
     "start": "turbo run start",
     "test": "turbo run test",
     "test:coverage": "turbo run test:coverage",

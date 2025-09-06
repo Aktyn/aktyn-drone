@@ -1,4 +1,4 @@
-import { type Message, MessageType, uuid } from "@aktyn-drone/common"
+import { type Message, MessageType, uuid, wait } from "@aktyn-drone/common"
 import { type DataConnection, Peer, type PeerError } from "peerjs"
 import {
   createContext,
@@ -26,6 +26,7 @@ const ConnectionContext = createContext({
   setUseTurnServer: (_useTurnServer: boolean) => {},
   connect: (_peerId: string) => {},
   disconnect: () => {},
+  reconnect: () => Promise.resolve(),
   isConnected: false,
   peerError: null as PeerError<string> | null,
   unstableConnection: false,
@@ -234,6 +235,26 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
     }
   }, [peer])
 
+  const reconnect = useCallback(async () => {
+    const lastPeerId = localStorage.getItem(LAST_CONNECTED_PEER_ID_KEY)
+
+    if (!lastPeerId) {
+      throw new Error("No last connected peer id")
+    }
+
+    try {
+      if (selfPeerId) {
+        disconnect()
+        await wait(5000)
+      }
+    } catch {
+      // noop
+    }
+
+    setUnstableConnection(false)
+    connect(lastPeerId)
+  }, [connect, disconnect, selfPeerId])
+
   const addMessageListener = useCallback((listener: MessageListener) => {
     listenersRef.current.push(listener)
   }, [])
@@ -248,7 +269,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
   }, [])
 
   return (
-    <ConnectionContext.Provider
+    <ConnectionContext
       value={{
         selfPeerId,
         turnServer,
@@ -257,6 +278,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
         setUseTurnServer,
         connect,
         disconnect,
+        reconnect,
         isConnected: connections.length > 0,
         peerError,
         unstableConnection,
@@ -266,7 +288,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
       }}
     >
       {children}
-    </ConnectionContext.Provider>
+    </ConnectionContext>
   )
 }
 

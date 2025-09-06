@@ -5,6 +5,7 @@ import { useStateToRef } from "~/hooks/useStateToRef"
 import { cn } from "~/lib/utils"
 import { useSettings } from "~/providers/settings-provider"
 
+//TODO: pitch, yaw and roll strength factor for allowing more accurate control
 const SMOOTH_KEYBOARD_UPDATE_SPEED = 0.002
 
 type JoystickProps = {
@@ -218,7 +219,7 @@ export const Joystick = memo<JoystickProps>(
         <div
           ref={containerRef}
           onContextMenu={(event) => event.preventDefault()}
-          className="aspect-square max-h-full bg-background/80 mx-auto rounded-md border flex items-center justify-center overflow-hidden select-none relative touch-none"
+          className="aspect-square max-h-full bg-background/80 mx-auto rounded-md border flex items-center justify-center select-none relative touch-none z-10"
         >
           <Separator className="absolute inset-0 my-auto opacity-40" />
           {!disableVertical && (

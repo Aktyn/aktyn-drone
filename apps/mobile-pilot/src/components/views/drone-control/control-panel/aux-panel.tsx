@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { MessageType } from "@aktyn-drone/common"
-import { CircleCheck, RefreshCcw } from "lucide-react"
+import { type AuxIndex, MessageType } from "@aktyn-drone/common"
+import { Check, RefreshCcw } from "lucide-react"
 import { memo, type PropsWithChildren, useCallback, useState } from "react"
 import { Button } from "~/components/ui/button"
 import { Label } from "~/components/ui/label"
@@ -24,7 +24,7 @@ export const AUXPanel = memo(() => {
   const [aux, setAux] = useGlobalState(`aux-values-${selfPeerId}`, initialAux)
 
   const setAuxValue = useCallback(
-    (index: number, value: number) => {
+    (index: AuxIndex, value: number) => {
       setAux((prev) => {
         const newAux = [...prev]
         newAux[index] = { value }
@@ -48,7 +48,10 @@ export const AUXPanel = memo(() => {
         }
         send({
           type: MessageType.SET_AUX,
-          data: { auxIndex: index, value: auxRef.current[index].value },
+          data: {
+            auxIndex: index as AuxIndex,
+            value: auxRef.current[index].value,
+          },
         })
       }, index * 100),
     )
@@ -75,7 +78,7 @@ export const AUXPanel = memo(() => {
   return (
     <div className="flex flex-col gap-y-2 w-full overflow-hidden bg-background/50 backdrop-blur-md rounded-lg p-4 mb-auto border">
       <Tabs value={tab} onValueChange={setTab} className="h-full flex flex-col">
-        <TabsList className="w-full *:flex-1">
+        <TabsList className="w-full *:grow *:overflow-hidden">
           <TabsTrigger value="basic">Basic</TabsTrigger>
           <TabsTrigger value="advanced">Advanced</TabsTrigger>
         </TabsList>
@@ -96,7 +99,7 @@ export const AUXPanel = memo(() => {
 
 type AuxParams = {
   auxValues: typeof initialAux
-  setAux: (index: number, value: number) => void
+  setAux: (index: AuxIndex, value: number) => void
 }
 
 function BasicAUX(props: AuxParams) {
@@ -119,7 +122,7 @@ function BasicAUX(props: AuxParams) {
 
 type AuxToggleProps = PropsWithChildren<
   AuxParams & {
-    auxIndex: number
+    auxIndex: AuxIndex
   }
 >
 
@@ -141,10 +144,10 @@ function AuxToggle({ auxIndex, auxValues, setAux, children }: AuxToggleProps) {
 }
 
 const CheckIndicator = ({ checked }: { checked: boolean }) => (
-  <CircleCheck
+  <Check
     className={cn(
-      "transition-[opacity,transform]",
-      !checked && "opacity-0 scale-50",
+      "transition-[opacity,scale]",
+      checked ? "opacity-200 scale-100" : "opacity-0 scale-50",
     )}
   />
 )
@@ -189,7 +192,7 @@ function AdvancedAUX({
             <Slider
               className="w-full"
               value={[auxValues[index].value]}
-              onValueChange={([value]) => setAux(index, value)}
+              onValueChange={([value]) => setAux(index as AuxIndex, value)}
               min={0}
               max={100}
               step={1}
