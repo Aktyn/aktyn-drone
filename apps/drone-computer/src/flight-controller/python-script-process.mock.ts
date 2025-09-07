@@ -183,8 +183,13 @@ export class MockedPythonScriptProcess
     }
 
     if (Math.abs(this.attitude.pitch) > EPSILON) {
-      const speed = this.throttle * (-this.attitude.pitch / Math.PI) * 100
-      const direction = this.attitude.yaw
+      const speed =
+        this.throttle *
+        (Math.max(Math.abs(this.attitude.pitch), Math.abs(this.attitude.roll)) /
+          Math.PI) *
+        100
+      const direction =
+        this.attitude.yaw + Math.atan2(this.attitude.roll, -this.attitude.pitch)
 
       const distanceMeters = speed * deltaTime
       const earthRadiusMeters = 6371000
@@ -200,7 +205,7 @@ export class MockedPythonScriptProcess
       this.gpsData.latitude += deltaLatRad * (180 / Math.PI)
       this.gpsData.longitude += deltaLonRad * (180 / Math.PI)
       this.gpsData.groundSpeed = Math.abs(speed * 100)
-      this.gpsData.heading = direction * (180 / Math.PI) //degrees
+      // this.gpsData.heading = direction * (180 / Math.PI) //degrees
 
       this.emitData({
         type: TelemetryDataType.GPS,

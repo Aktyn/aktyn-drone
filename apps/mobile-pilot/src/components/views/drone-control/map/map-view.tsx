@@ -1,18 +1,14 @@
-import { MessageType } from "@aktyn-drone/common"
 import { type LatLngExpression } from "leaflet"
 import { Crosshair, TriangleAlert } from "lucide-react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useRef } from "react"
 import { type MapRef } from "react-leaflet/MapContainer"
 import { Button } from "~/components/ui/button"
 import { cn } from "~/lib/utils"
-import {
-  useConnection,
-  useConnectionMessageHandler,
-} from "~/providers/connection-provider"
 import { DroneCameraPreview } from "../drone-camera-preview.js"
 
 import "leaflet/dist/leaflet.css"
 import { DEFAULT_ZOOM, Map } from "./map.js"
+import { useHomePoint } from "~/hooks/useHomePoint.js"
 
 interface MapProps {
   latitude: number
@@ -27,30 +23,10 @@ export function MapView({
   satellites,
   heading = 0,
 }: MapProps) {
-  const { send } = useConnection()
-
   const mapRef = useRef<MapRef>(null)
   const position: LatLngExpression = [latitude, longitude]
 
-  const [homePoint, setHomePoint] = useState<{
-    latitude: number
-    longitude: number
-  } | null>(null)
-
-  useEffect(() => {
-    send({
-      type: MessageType.REQUEST_HOME_POINT,
-      data: {},
-    })
-  }, [send])
-
-  useConnectionMessageHandler((message) => {
-    switch (message.type) {
-      case MessageType.HOME_POINT_COORDINATES:
-        setHomePoint(message.data)
-        break
-    }
-  })
+  const homePoint = useHomePoint()
 
   const centerAt = useCallback((position: LatLngExpression) => {
     mapRef.current?.setView(
@@ -69,9 +45,9 @@ export function MapView({
         ref={mapRef}
         className="z-0"
         center={position}
+        homePoint={homePoint}
         zoom={DEFAULT_ZOOM}
         scrollWheelZoom={true}
-        homePoint={homePoint}
         heading={heading}
       />
       <DroneCameraPreview

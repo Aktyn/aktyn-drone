@@ -14,8 +14,8 @@ function App() {
   const [secondsToReconnect, setSecondsToReconnect] = useState(0)
 
   useEffect(() => {
-    if (!isConnected && unstableConnection) {
-      let seconds = 30
+    if (isConnected && unstableConnection) {
+      let seconds = 15
       setSecondsToReconnect(seconds)
       const interval = setInterval(() => {
         seconds -= 1
@@ -24,7 +24,7 @@ function App() {
           reconnect().catch(console.error)
           clearInterval(interval)
         }
-      }, 1000)
+      }, 1_000)
 
       return () => clearInterval(interval)
     } else {

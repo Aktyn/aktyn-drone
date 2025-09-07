@@ -152,8 +152,8 @@ function createMockFrame(width: number, height: number, count: number) {
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const v =
-        Math.floor((count * 2 - x) / 64) % 2 ===
-        Math.floor((count * 2 - y) / 64) % 2
+        Math.ceil((x + Math.sin((count / 120) * Math.PI) * 64) / 64) % 2 ===
+        Math.ceil((y - Math.cos((count / 120) * Math.PI) * 64) / 64) % 2
           ? 64
           : 128
 

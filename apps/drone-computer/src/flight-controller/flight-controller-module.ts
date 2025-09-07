@@ -86,6 +86,16 @@ export function initFlightControllerModule() {
   }
 
   const handleMessage = (message: Message, conn: DataConnection) => {
+    const broadcastHomePoint = () => {
+      const homePoint = telemetry.getHomePoint()
+      if (homePoint) {
+        Connection.broadcast({
+          type: MessageType.HOME_POINT_COORDINATES,
+          data: homePoint,
+        })
+      }
+    }
+
     switch (message.type) {
       case MessageType.REQUEST_TELEMETRY:
         telemetry.sendFullTelemetry(conn)
@@ -112,6 +122,7 @@ export function initFlightControllerModule() {
           Math.abs(message.data.value - 90.66) < 0.1
         ) {
           telemetry.setHomePoint()
+          broadcastHomePoint()
         }
         sendMessageToPython({
           type: "set-aux",
@@ -122,15 +133,7 @@ export function initFlightControllerModule() {
         })
         break
       case MessageType.REQUEST_HOME_POINT:
-        {
-          const homePoint = telemetry.getHomePoint()
-          if (homePoint) {
-            Connection.broadcast({
-              type: MessageType.HOME_POINT_COORDINATES,
-              data: homePoint,
-            })
-          }
-        }
+        broadcastHomePoint()
         break
     }
   }

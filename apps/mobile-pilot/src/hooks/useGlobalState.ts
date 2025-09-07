@@ -39,7 +39,7 @@ class GlobalStorage implements Storage {
 const globalStore = new GlobalStorage()
 const keyPrefix = "global-state-"
 
-export function useGlobalState<ValueType extends object | number>(
+export function useGlobalState<ValueType extends object | number | string>(
   name: string,
   defaultValue: ValueType,
   storage: Storage = globalStore,
@@ -63,7 +63,7 @@ export function useGlobalState<ValueType extends object | number>(
   return [state, setState]
 }
 
-function getItem<ValueType extends object | number>(
+function getItem<ValueType extends object | number | string>(
   name: string,
   storage: Storage,
 ) {

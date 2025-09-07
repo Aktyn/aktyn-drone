@@ -10,7 +10,7 @@ import type { MapRef } from "react-leaflet/MapContainer"
 
 export const DEFAULT_ZOOM = 17
 
-type MapProps = {
+export type MapProps = {
   homePoint?: { latitude: number; longitude: number } | null
   heading: number
 } & MapContainerProps &

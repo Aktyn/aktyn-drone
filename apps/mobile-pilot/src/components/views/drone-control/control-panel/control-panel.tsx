@@ -1,4 +1,5 @@
 import { clamp, MessageType } from "@aktyn-drone/common"
+import { type LatLngExpression } from "leaflet"
 import { Maximize2, Minimize2, ZoomIn, ZoomOut } from "lucide-react"
 import {
   memo,
@@ -8,29 +9,29 @@ import {
   useRef,
   useState,
 } from "react"
+import { type MapRef } from "react-leaflet/MapContainer"
 import { PreciseSlider } from "~/components/common/precise-slider"
 import { Button } from "~/components/ui/button"
 import { Checkbox } from "~/components/ui/checkbox"
 import { Label } from "~/components/ui/label"
+import { ScrollArea } from "~/components/ui/scroll-area"
 import { Separator } from "~/components/ui/separator"
+import { Switch } from "~/components/ui/switch"
+import { useGlobalState } from "~/hooks/useGlobalState"
+import { useHomePoint } from "~/hooks/useHomePoint"
 import { useInterval } from "~/hooks/useInterval"
+import { useStateToRef } from "~/hooks/useStateToRef"
 import { cn } from "~/lib/utils"
 import { useConnection } from "~/providers/connection-provider"
 import { useSettings } from "~/providers/settings-provider"
 import { DroneCameraPreview } from "../drone-camera-preview"
+import { DEFAULT_ZOOM, Map } from "../map/map"
 import { AUXPanel } from "./aux-panel"
 import {
   DroneOrientationWidget,
   type DroneOrientationWidgetProps,
 } from "./drone-orientation-widget"
 import { Joystick } from "./joystick"
-import { useGlobalState } from "~/hooks/useGlobalState"
-import { useStateToRef } from "~/hooks/useStateToRef"
-import { ScrollArea } from "~/components/ui/scroll-area"
-import { Switch } from "~/components/ui/switch"
-import { DEFAULT_ZOOM, Map } from "../map/map"
-import { type LatLngExpression } from "leaflet"
-import { type MapRef } from "react-leaflet/MapContainer"
 
 type ControlPanelProps = DroneOrientationWidgetProps &
   ControlPanelMainProps & {
@@ -47,27 +48,14 @@ export const ControlPanel = memo<ControlPanelProps>(
     onPreviewMaximizedChange,
     ...droneOrientationWidgetProps
   }) => {
-    const mapRef = useRef<MapRef>(null)
-
-    const [bottomView, setBottomView] = useState<"orientation" | "map">(
+    const [bottomView, setBottomView] = useGlobalState<"orientation" | "map">(
+      "bottom-view",
       "orientation",
+      localStorage,
     )
     const [bottomViewSize, setBottomViewSize] = useState<"sm" | "md" | "lg">(
       "sm",
     )
-
-    const position: LatLngExpression = [latitude, longitude]
-
-    useEffect(() => {
-      mapRef.current?.setView(
-        [latitude, longitude],
-        mapRef.current?.getZoom() ?? DEFAULT_ZOOM,
-        {
-          animate: true,
-          duration: 0.4,
-        },
-      )
-    }, [latitude, longitude])
 
     return (
       <div className="flex-grow overflow-hidden size-full animate-in fade-in grid grid-cols-[minmax(12rem,1fr)_minmax(16rem,auto)_minmax(12rem,1fr)] grid-rows-[auto_1fr] justify-between items-stretch gap-y-2">
@@ -93,18 +81,17 @@ export const ControlPanel = memo<ControlPanelProps>(
               className={cn("mt-auto", droneOrientationWidgetProps.className)}
             />
           )}
-          {bottomView === "map" && (
-            <div className="mt-auto absolute inset-0 bg-blue-300/20 pointer-events-none z-0 rounded-lg overflow-hidden">
-              <Map
-                ref={mapRef}
-                center={position}
-                zoom={DEFAULT_ZOOM - 1}
-                scrollWheelZoom={false}
-                heading={heading}
-                className="w-full h-full"
-              />
-            </div>
-          )}
+          {bottomView === "map" &&
+            Math.abs(latitude) !== Infinity &&
+            Math.abs(longitude) !== Infinity && (
+              <div className="mt-auto absolute inset-0 bg-blue-300/20 pointer-events-none z-0 rounded-lg overflow-hidden">
+                <MapPreview
+                  latitude={latitude}
+                  longitude={longitude}
+                  heading={heading}
+                />
+              </div>
+            )}
 
           <div className="absolute bottom-0 w-full flex flex-row items-center justify-stretch gap-1 p-1 *:flex-1 transition-transform pointer-fine:translate-y-full z-100 bg-background/50">
             <Button
@@ -145,6 +132,44 @@ export const ControlPanel = memo<ControlPanelProps>(
 )
 
 ControlPanel.displayName = "ControlPanel"
+
+type MapPreviewProps = {
+  latitude: number
+  longitude: number
+  heading: number
+}
+
+function MapPreview({ latitude, longitude, heading }: MapPreviewProps) {
+  const mapRef = useRef<MapRef>(null)
+
+  const homePoint = useHomePoint()
+
+  const position: LatLngExpression = [latitude, longitude]
+
+  useEffect(() => {
+    mapRef.current?.setView(
+      [latitude, longitude],
+      mapRef.current?.getZoom() ?? DEFAULT_ZOOM,
+      {
+        animate: true,
+        duration: 0.4,
+      },
+    )
+    mapRef.current?.invalidateSize(true)
+  }, [latitude, longitude])
+
+  return (
+    <Map
+      ref={mapRef}
+      center={position}
+      zoom={DEFAULT_ZOOM - 1}
+      scrollWheelZoom={false}
+      heading={heading}
+      className="w-full h-full"
+      homePoint={homePoint}
+    />
+  )
+}
 
 type ControlPanelMainProps = {
   onPreviewMaximizedChange?: (maximized: boolean) => void

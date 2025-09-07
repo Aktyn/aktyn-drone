@@ -245,11 +245,13 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
     try {
       if (selfPeerId) {
         disconnect()
-        await wait(5000)
+        await wait(100)
       }
     } catch {
       // noop
     }
+
+    console.info("Reconnecting to last peer id:", lastPeerId)
 
     setUnstableConnection(false)
     connect(lastPeerId)
