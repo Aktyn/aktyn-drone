@@ -245,7 +245,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
     try {
       if (selfPeerId) {
         disconnect()
-        await wait(100)
+        await wait(2_000)
       }
     } catch {
       // noop

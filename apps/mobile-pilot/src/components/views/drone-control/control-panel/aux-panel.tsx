@@ -1,14 +1,22 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type AuxIndex, MessageType } from "@aktyn-drone/common"
-import { Check, RefreshCcw } from "lucide-react"
+import { Check, RefreshCcw, SlidersHorizontal } from "lucide-react"
 import { memo, type PropsWithChildren, useCallback, useState } from "react"
 import { Button } from "~/components/ui/button"
 import { Label } from "~/components/ui/label"
 import { ScrollArea } from "~/components/ui/scroll-area"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "~/components/ui/sheet"
 import { Slider } from "~/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { Toggle } from "~/components/ui/toggle"
 import { useGlobalState } from "~/hooks/useGlobalState"
+import { useSizer } from "~/hooks/useSizer"
 import { useStateToRef } from "~/hooks/useStateToRef"
 import { AUX_CHANNELS_COUNT } from "~/lib/consts"
 import { cn } from "~/lib/utils"
@@ -22,6 +30,9 @@ export const AUXPanel = memo(() => {
 
   const [tab, setTab] = useState("basic")
   const [aux, setAux] = useGlobalState(`aux-values-${selfPeerId}`, initialAux)
+
+  const { ref, height: containerHeight } = useSizer()
+  const compact = containerHeight < 256
 
   const setAuxValue = useCallback(
     (index: AuxIndex, value: number) => {
@@ -42,18 +53,21 @@ export const AUXPanel = memo(() => {
     setAux(initialAux)
 
     const timeouts = Array.from({ length: AUX_CHANNELS_COUNT }, (_, index) =>
-      setTimeout(() => {
-        if (!auxRef.current) {
-          return
-        }
-        send({
-          type: MessageType.SET_AUX,
-          data: {
-            auxIndex: index as AuxIndex,
-            value: auxRef.current[index].value,
-          },
-        })
-      }, index * 100),
+      setTimeout(
+        () => {
+          if (!auxRef.current) {
+            return
+          }
+          send({
+            type: MessageType.SET_AUX,
+            data: {
+              auxIndex: index as AuxIndex,
+              value: auxRef.current[index].value,
+            },
+          })
+        },
+        ((index + 1) * 1000) / 60,
+      ),
     )
 
     return timeouts
@@ -76,23 +90,72 @@ export const AUXPanel = memo(() => {
   })
 
   return (
-    <div className="flex flex-col gap-y-2 w-full overflow-hidden bg-background/50 backdrop-blur-md rounded-lg p-4 mb-auto border">
-      <Tabs value={tab} onValueChange={setTab} className="h-full flex flex-col">
-        <TabsList className="w-full *:grow *:overflow-hidden">
-          <TabsTrigger value="basic">Basic</TabsTrigger>
-          <TabsTrigger value="advanced">Advanced</TabsTrigger>
-        </TabsList>
-        <TabsContent asChild value="basic">
-          <BasicAUX auxValues={aux ?? []} setAux={setAuxValue} />
-        </TabsContent>
-        <TabsContent asChild value="advanced">
-          <AdvancedAUX
-            auxValues={aux ?? []}
-            setAux={setAuxValue}
-            onReset={resetAux}
-          />
-        </TabsContent>
-      </Tabs>
+    <div
+      ref={ref}
+      className="flex flex-col justify-stretch size-full overflow-hidden"
+    >
+      {compact ? (
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="w-full">
+              <SlidersHorizontal />
+              Manage AUX
+            </Button>
+          </SheetTrigger>
+          <SheetContent
+            side="left"
+            className="w-64 max-w-[61.8dvw]"
+            aria-describedby={undefined}
+          >
+            <Tabs
+              value={tab}
+              onValueChange={setTab}
+              className="flex flex-col h-full"
+            >
+              <SheetHeader>
+                <SheetTitle>AUX settings</SheetTitle>
+                <TabsList className="w-full *:grow">
+                  <TabsTrigger value="basic">Basic</TabsTrigger>
+                  <TabsTrigger value="advanced">Advanced</TabsTrigger>
+                </TabsList>
+              </SheetHeader>
+              <TabsContent asChild value="basic">
+                <BasicAUX auxValues={aux ?? []} setAux={setAuxValue} />
+              </TabsContent>
+              <TabsContent asChild value="advanced">
+                <AdvancedAUX
+                  auxValues={aux ?? []}
+                  setAux={setAuxValue}
+                  onReset={resetAux}
+                />
+              </TabsContent>
+            </Tabs>
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <div className="flex flex-col gap-y-2 w-full max-h-full bg-background/50 backdrop-blur-md rounded-lg p-2 mb-auto border overflow-hidden">
+          <Tabs
+            value={tab}
+            onValueChange={setTab}
+            className="flex flex-col h-full"
+          >
+            <TabsList className="w-full *:grow">
+              <TabsTrigger value="basic">Basic</TabsTrigger>
+              <TabsTrigger value="advanced">Advanced</TabsTrigger>
+            </TabsList>
+            <TabsContent asChild value="basic">
+              <BasicAUX auxValues={aux ?? []} setAux={setAuxValue} />
+            </TabsContent>
+            <TabsContent asChild value="advanced">
+              <AdvancedAUX
+                auxValues={aux ?? []}
+                setAux={setAuxValue}
+                onReset={resetAux}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
+      )}
     </div>
   )
 })
@@ -104,7 +167,7 @@ type AuxParams = {
 
 function BasicAUX(props: AuxParams) {
   return (
-    <ScrollArea className="p-2 pt-4 -m-4 -mt-2">
+    <ScrollArea className="-m-2 mt-0">
       <div className="flex flex-col gap-y-2 p-2 *:grid *:grid-cols-[1fr_auto_1fr] *:whitespace-nowrap">
         <AuxToggle {...props} auxIndex={0}>
           Arm
@@ -162,7 +225,7 @@ function AdvancedAUX({
   )
 
   return (
-    <ScrollArea className="pr-2 pb-2 -m-4 mt-0">
+    <ScrollArea className="pr-2 pb-2 -m-2 mt-0 overflow-hidden">
       <div className="p-2 flex flex-col gap-y-4">
         <Button
           size="sm"

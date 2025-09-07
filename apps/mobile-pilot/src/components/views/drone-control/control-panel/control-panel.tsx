@@ -140,6 +140,7 @@ type MapPreviewProps = {
 }
 
 function MapPreview({ latitude, longitude, heading }: MapPreviewProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapRef>(null)
 
   const homePoint = useHomePoint()
@@ -147,27 +148,43 @@ function MapPreview({ latitude, longitude, heading }: MapPreviewProps) {
   const position: LatLngExpression = [latitude, longitude]
 
   useEffect(() => {
-    mapRef.current?.setView(
-      [latitude, longitude],
-      mapRef.current?.getZoom() ?? DEFAULT_ZOOM,
-      {
-        animate: true,
-        duration: 0.4,
-      },
-    )
-    mapRef.current?.invalidateSize(true)
+    const map = mapRef.current
+    const container = containerRef.current
+
+    if (!map || !container) {
+      return
+    }
+
+    map.setView([latitude, longitude], map.getZoom() ?? DEFAULT_ZOOM, {
+      animate: true,
+      duration: 0.4,
+    })
+    map.invalidateSize(true)
+
+    const onResize = () => {
+      map.invalidateSize(true)
+    }
+
+    const resizeObserver = new ResizeObserver(onResize)
+    resizeObserver.observe(container)
+    resizeObserver.observe(map.getContainer())
+
+    return () => {
+      resizeObserver.disconnect()
+    }
   }, [latitude, longitude])
 
   return (
-    <Map
-      ref={mapRef}
-      center={position}
-      zoom={DEFAULT_ZOOM - 1}
-      scrollWheelZoom={false}
-      heading={heading}
-      className="w-full h-full"
-      homePoint={homePoint}
-    />
+    <div ref={containerRef} className="size-full *:size-full">
+      <Map
+        ref={mapRef}
+        center={position}
+        zoom={DEFAULT_ZOOM - 1}
+        scrollWheelZoom={false}
+        heading={heading}
+        homePoint={homePoint}
+      />
+    </div>
   )
 }
 

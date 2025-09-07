@@ -205,7 +205,6 @@ export class MockedPythonScriptProcess
       this.gpsData.latitude += deltaLatRad * (180 / Math.PI)
       this.gpsData.longitude += deltaLonRad * (180 / Math.PI)
       this.gpsData.groundSpeed = Math.abs(speed * 100)
-      // this.gpsData.heading = direction * (180 / Math.PI) //degrees
 
       this.emitData({
         type: TelemetryDataType.GPS,
@@ -250,9 +249,6 @@ export class MockedPythonScriptProcess
           this.emitData({
             type: TelemetryDataType.GPS,
             ...this.gpsData,
-            // groundSpeed: Math.random() * 100, //cm/s
-            // heading: Math.random() * 360 - 180, //degrees
-            // altitude: 200 + Math.random() * 100, //meters
           })
         }
         break
@@ -271,9 +267,6 @@ export class MockedPythonScriptProcess
           this.emitData({
             type: TelemetryDataType.GPS,
             ...this.gpsData,
-            // groundSpeed: Math.random() * 100, //cm/s
-            // heading: Math.random() * 360 - 180, //degrees
-            // altitude: 200 + Math.random() * 100, //meters
           })
         }
         break
@@ -290,7 +283,7 @@ export class MockedPythonScriptProcess
         }
         break
       case "set-aux":
-        // noop
+        console.info("AUX set", data.value)
         break
       default:
         logger.warn("Unhandled message:", JSON.stringify(data))

@@ -29,7 +29,8 @@ export function DroneOrientationWidget({
       return
     }
 
-    mesh.rotation.set(pitch, roll, -yaw)
+    // mesh.rotation.set(pitch, roll, -yaw)
+    mesh.rotation.set(pitch, roll, -yaw, "ZXY")
   }, [mesh, pitch, roll, yaw])
 
   useEffect(() => {
