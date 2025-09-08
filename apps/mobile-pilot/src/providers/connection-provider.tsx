@@ -281,7 +281,7 @@ export function ConnectionProvider({ children }: PropsWithChildren) {
         connect,
         disconnect,
         reconnect,
-        isConnected: connections.length > 0,
+        isConnected: connections.filter((conn) => conn.open).length > 0,
         peerError,
         unstableConnection,
         send: broadcast,

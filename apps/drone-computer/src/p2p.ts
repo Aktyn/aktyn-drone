@@ -11,6 +11,7 @@ type MessageListener = (message: Message, conn: DataConnection) => void
 type EventMap = {
   message: Parameters<MessageListener>
   "ping-timeout": []
+  connectionOpened: [conn: DataConnection]
   disconnect: []
 }
 
@@ -86,6 +87,8 @@ export class Connection extends EventEmitter<EventMap> {
     logger.log("Establishing connection with peer:", conn.peer)
     conn.on("open", () => {
       this.connections.push(conn)
+      this.emit("connectionOpened", conn)
+
       this.nextPingAwaiters.set(conn.connectionId, null)
       logger.log("Connected to peer:", conn.peer)
     })
@@ -93,8 +96,13 @@ export class Connection extends EventEmitter<EventMap> {
     conn.on("close", () => {
       logger.log("Connection closed")
       this.connections = this.connections.filter((c) => c !== conn)
-      this.nextPingAwaiters.delete(conn.connectionId)
       this.emit("disconnect")
+
+      const awaiter = this.nextPingAwaiters.get(conn.connectionId)
+      if (awaiter) {
+        clearTimeout(awaiter)
+      }
+      this.nextPingAwaiters.delete(conn.connectionId)
     })
 
     conn.on("data", (data: Message) => {
@@ -127,12 +135,14 @@ export class Connection extends EventEmitter<EventMap> {
           }
           this.nextPingAwaiters.set(
             conn.connectionId,
-            setTimeout(() => {
-              //TODO: fix the issue that occurs after mobile-pilot reconnects with the drone
-              logger.warn("Time between successive pings is too long.")
-              this.nextPingAwaiters.set(conn.connectionId, null)
-              this.emit("ping-timeout")
-            }, 300_000),
+            setTimeout(
+              () => {
+                logger.warn("Time between successive pings is too long.")
+                this.nextPingAwaiters.set(conn.connectionId, null)
+                this.emit("ping-timeout")
+              },
+              1_000 * 60 * 3,
+            ),
           )
 
           Connection.broadcast(
@@ -160,6 +170,7 @@ export class Connection extends EventEmitter<EventMap> {
       case MessageType.SEND_EULER_ANGLES:
       case MessageType.SET_AUX:
       case MessageType.REQUEST_HOME_POINT:
+      case MessageType.REQUEST_AUX:
         // noop
         break
     }

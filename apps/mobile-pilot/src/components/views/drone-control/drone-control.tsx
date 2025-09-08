@@ -64,14 +64,14 @@ export const DroneControl = memo(() => {
         type: MessageType.REQUEST_TODAY_LOGS,
         data: {},
       })
-    }, 100)
+    }, 1000)
 
     const telemetryTimeout = setTimeout(() => {
       send({
         type: MessageType.REQUEST_TELEMETRY,
         data: {},
       })
-    }, 1_000)
+    }, 500)
 
     return () => {
       clearTimeout(telemetryTimeout)

@@ -58,7 +58,7 @@ export const ControlPanel = memo<ControlPanelProps>(
     )
 
     return (
-      <div className="flex-grow overflow-hidden size-full animate-in fade-in grid grid-cols-[minmax(12rem,1fr)_minmax(16rem,auto)_minmax(12rem,1fr)] grid-rows-[auto_1fr] justify-between items-stretch gap-y-2">
+      <div className="flex-grow overflow-hidden size-full animate-in fade-in grid grid-cols-[minmax(12rem,32rem)_minmax(16rem,1fr)_minmax(12rem,32rem)] grid-rows-[auto_1fr] justify-between items-stretch gap-y-2">
         <ControlPanelMain onPreviewMaximizedChange={onPreviewMaximizedChange} />
         <div
           className={cn(
@@ -149,9 +149,8 @@ function MapPreview({ latitude, longitude, heading }: MapPreviewProps) {
 
   useEffect(() => {
     const map = mapRef.current
-    const container = containerRef.current
 
-    if (!map || !container) {
+    if (!map) {
       return
     }
 
@@ -160,19 +159,25 @@ function MapPreview({ latitude, longitude, heading }: MapPreviewProps) {
       duration: 0.4,
     })
     map.invalidateSize(true)
+  }, [latitude, longitude])
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) {
+      return
+    }
 
     const onResize = () => {
-      map.invalidateSize(true)
+      mapRef.current?.invalidateSize(true)
     }
 
     const resizeObserver = new ResizeObserver(onResize)
     resizeObserver.observe(container)
-    resizeObserver.observe(map.getContainer())
 
     return () => {
       resizeObserver.disconnect()
     }
-  }, [latitude, longitude])
+  }, [])
 
   return (
     <div ref={containerRef} className="size-full *:size-full">

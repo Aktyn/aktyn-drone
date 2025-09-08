@@ -21,6 +21,7 @@ export enum MessageType {
   AUX_VALUE = "aux_values",
   REQUEST_HOME_POINT = "request_home_point",
   HOME_POINT_COORDINATES = "home_point_coordinates",
+  REQUEST_AUX = "request_aux",
 }
 
 type MessageBase<Type extends MessageType, Data extends object> = {
@@ -91,5 +92,7 @@ export type Message =
       MessageType.HOME_POINT_COORDINATES,
       { latitude: number; longitude: number }
     >
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  | MessageBase<MessageType.REQUEST_AUX, {}>
 
 export type AuxIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11

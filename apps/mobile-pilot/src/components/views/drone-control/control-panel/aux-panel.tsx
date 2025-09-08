@@ -1,7 +1,20 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { type AuxIndex, MessageType } from "@aktyn-drone/common"
-import { Check, RefreshCcw, SlidersHorizontal } from "lucide-react"
-import { memo, type PropsWithChildren, useCallback, useState } from "react"
+import {
+  Check,
+  Drone,
+  FlipVertical2,
+  LifeBuoy,
+  RefreshCcw,
+  SlidersHorizontal,
+} from "lucide-react"
+import {
+  memo,
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useState,
+} from "react"
 import { Button } from "~/components/ui/button"
 import { Label } from "~/components/ui/label"
 import { ScrollArea } from "~/components/ui/scroll-area"
@@ -26,7 +39,7 @@ import {
 } from "~/providers/connection-provider"
 
 export const AUXPanel = memo(() => {
-  const { send, selfPeerId } = useConnection()
+  const { send, selfPeerId, isConnected } = useConnection()
 
   const [tab, setTab] = useState("basic")
   const [aux, setAux] = useGlobalState(`aux-values-${selfPeerId}`, initialAux)
@@ -73,6 +86,23 @@ export const AUXPanel = memo(() => {
     return timeouts
   }, [auxRef, send, setAux])
 
+  useEffect(() => {
+    if (!isConnected) {
+      return
+    }
+
+    const timeout = setTimeout(() => {
+      send({
+        type: MessageType.REQUEST_AUX,
+        data: {},
+      })
+    }, 1_000)
+
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, [isConnected, send])
+
   useConnectionMessageHandler((message) => {
     switch (message.type) {
       case MessageType.AUX_VALUE:
@@ -95,43 +125,56 @@ export const AUXPanel = memo(() => {
       className="flex flex-col justify-stretch size-full overflow-hidden"
     >
       {compact ? (
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="w-full">
-              <SlidersHorizontal />
-              Manage AUX
-            </Button>
-          </SheetTrigger>
-          <SheetContent
-            side="left"
-            className="w-64 max-w-[61.8dvw]"
-            aria-describedby={undefined}
-          >
-            <Tabs
-              value={tab}
-              onValueChange={setTab}
-              className="flex flex-col h-full"
+        <div className="flex flex-col items-stretch gap-y-2">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="w-full">
+                <SlidersHorizontal />
+                Manage AUX
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="w-64 max-w-[61.8dvw]"
+              aria-describedby={undefined}
             >
-              <SheetHeader>
-                <SheetTitle>AUX settings</SheetTitle>
-                <TabsList className="w-full *:grow">
-                  <TabsTrigger value="basic">Basic</TabsTrigger>
-                  <TabsTrigger value="advanced">Advanced</TabsTrigger>
-                </TabsList>
-              </SheetHeader>
-              <TabsContent asChild value="basic">
-                <BasicAUX auxValues={aux ?? []} setAux={setAuxValue} />
-              </TabsContent>
-              <TabsContent asChild value="advanced">
-                <AdvancedAUX
-                  auxValues={aux ?? []}
-                  setAux={setAuxValue}
-                  onReset={resetAux}
-                />
-              </TabsContent>
-            </Tabs>
-          </SheetContent>
-        </Sheet>
+              <Tabs
+                value={tab}
+                onValueChange={setTab}
+                className="flex flex-col h-full"
+              >
+                <SheetHeader>
+                  <SheetTitle>AUX settings</SheetTitle>
+                  <TabsList className="w-full *:grow">
+                    <TabsTrigger value="basic">Basic</TabsTrigger>
+                    <TabsTrigger value="advanced">Advanced</TabsTrigger>
+                  </TabsList>
+                </SheetHeader>
+                <TabsContent asChild value="basic">
+                  <BasicAUX auxValues={aux ?? []} setAux={setAuxValue} />
+                </TabsContent>
+                <TabsContent asChild value="advanced">
+                  <AdvancedAUX
+                    auxValues={aux ?? []}
+                    setAux={setAuxValue}
+                    onReset={resetAux}
+                  />
+                </TabsContent>
+              </Tabs>
+            </SheetContent>
+          </Sheet>
+          <div className="mx-auto inline-flex flex-row flex-wrap items-center gap-2 *:size-4">
+            {AuxToggle.isToggled(aux?.[0].value ?? 0) && (
+              <Drone className="text-green-300" />
+            )}
+            {AuxToggle.isToggled(aux?.[1].value ?? 0) && (
+              <FlipVertical2 className="text-blue-300" />
+            )}
+            {AuxToggle.isToggled(aux?.[3].value ?? 0) && (
+              <LifeBuoy className="text-orange-400" />
+            )}
+          </div>
+        </div>
       ) : (
         <div className="flex flex-col gap-y-2 w-full max-h-full bg-background/50 backdrop-blur-md rounded-lg p-2 mb-auto border overflow-hidden">
           <Tabs
@@ -170,13 +213,22 @@ function BasicAUX(props: AuxParams) {
     <ScrollArea className="-m-2 mt-0">
       <div className="flex flex-col gap-y-2 p-2 *:grid *:grid-cols-[1fr_auto_1fr] *:whitespace-nowrap">
         <AuxToggle {...props} auxIndex={0}>
-          Arm
+          <div className="flex gap-2 items-center">
+            <Drone />
+            Arm
+          </div>
         </AuxToggle>
         <AuxToggle {...props} auxIndex={1}>
-          Angle mode
+          <div className="flex gap-2 items-center">
+            <FlipVertical2 />
+            Angle mode
+          </div>
         </AuxToggle>
         <AuxToggle {...props} auxIndex={3}>
-          GPS rescue
+          <div className="flex gap-2 items-center">
+            <LifeBuoy className="inline" />
+            GPS rescue
+          </div>
         </AuxToggle>
       </div>
     </ScrollArea>
@@ -190,7 +242,7 @@ type AuxToggleProps = PropsWithChildren<
 >
 
 function AuxToggle({ auxIndex, auxValues, setAux, children }: AuxToggleProps) {
-  const toggled = Math.abs(auxValues[auxIndex].value - 90.66) < 0.1
+  const toggled = AuxToggle.isToggled(auxValues[auxIndex].value)
   return (
     <Toggle
       variant="outline"
@@ -205,6 +257,8 @@ function AuxToggle({ auxIndex, auxValues, setAux, children }: AuxToggleProps) {
     </Toggle>
   )
 }
+
+AuxToggle.isToggled = (value: number) => Math.abs(value - 90.66) < 0.1
 
 const CheckIndicator = ({ checked }: { checked: boolean }) => (
   <Check

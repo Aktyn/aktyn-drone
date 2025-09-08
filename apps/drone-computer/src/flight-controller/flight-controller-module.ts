@@ -41,6 +41,10 @@ export type PythonScriptMessage =
       }
     }
 
+export type FlightControllerModule = ReturnType<
+  typeof initFlightControllerModule
+>
+
 export function initFlightControllerModule() {
   const mock = process.env.MOCK_FLIGHT_CONTROLLER === "true"
 
@@ -68,6 +72,8 @@ export function initFlightControllerModule() {
   }
   start()
 
+  const updatedAuxValues = new Map<AuxIndex, number>()
+
   const sendMessageToPython = (data: PythonScriptMessage) => {
     try {
       const io = pythonScriptProcess?.stdin
@@ -80,22 +86,29 @@ export function initFlightControllerModule() {
           logger.error("Error writing to python script stdin:", error)
         }
       })
+
+      if (data.type === "set-aux") {
+        updatedAuxValues.set(data.value.index, data.value.value * 100)
+      }
     } catch (error) {
       logger.error("Error sending message to python script:", error)
     }
   }
 
-  const handleMessage = (message: Message, conn: DataConnection) => {
-    const broadcastHomePoint = () => {
-      const homePoint = telemetry.getHomePoint()
-      if (homePoint) {
-        Connection.broadcast({
+  const broadcastHomePoint = (conn?: DataConnection) => {
+    const homePoint = telemetry.getHomePoint()
+    if (homePoint) {
+      Connection.broadcast(
+        {
           type: MessageType.HOME_POINT_COORDINATES,
           data: homePoint,
-        })
-      }
+        },
+        conn ? [conn] : undefined,
+      )
     }
+  }
 
+  const handleMessage = (message: Message, conn: DataConnection) => {
     switch (message.type) {
       case MessageType.REQUEST_TELEMETRY:
         telemetry.sendFullTelemetry(conn)
@@ -133,7 +146,18 @@ export function initFlightControllerModule() {
         })
         break
       case MessageType.REQUEST_HOME_POINT:
-        broadcastHomePoint()
+        broadcastHomePoint(conn)
+        break
+      case MessageType.REQUEST_AUX:
+        for (const [auxIndex, value] of updatedAuxValues) {
+          Connection.broadcast(
+            {
+              type: MessageType.AUX_VALUE,
+              data: { auxIndex, value },
+            },
+            conn ? [conn] : undefined,
+          )
+        }
         break
     }
   }
