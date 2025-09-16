@@ -31,7 +31,7 @@ export class SafetyMeasures {
         this.initiate()
         this.safetyMeasuresTimeout = null
       },
-      1_000 * 60 * 5, // 5 minutes
+      1_000 * 60 * 8, // 8 minutes
     )
   }
 

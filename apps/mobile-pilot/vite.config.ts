@@ -8,6 +8,7 @@ const ReactCompilerConfig = {}
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "/aktyn-drone/",
   plugins: [
     react({
       babel: {
