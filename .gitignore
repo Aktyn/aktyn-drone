@@ -1,0 +1,14 @@
+npm-debug.log*
+node_modules/
+.npm
+dist/
+.env
+.directory
+.turbo/
+
+*.tsbuildinfo
+
+.Trash-1000/
+myenv/
+venv/
+logs/

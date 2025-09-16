@@ -1,0 +1,17 @@
+{
+  "name": "Mobile Pilot",
+  "short_name": "Mobile Pilot",
+  "description": "Mobile pilot application for drone control",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#070e15",
+  "theme_color": "#070e15",
+  "icons": [
+    {
+      "src": "/aktyn_logo_dissolv.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
